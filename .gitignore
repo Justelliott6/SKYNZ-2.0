@@ -1,0 +1,112 @@
+# ==================== NODE & NPM ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ==================== ENVIRONMENT VARIABLES ====================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==================== BUILD & DIST ====================
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# ==================== REACT ====================
+frontend/build/
+frontend/.env.local
+frontend/.env.*.local
+frontend/coverage/
+
+# ==================== BACKEND ====================
+backend/uploads/
+backend/logs/
+backend/*.log
+
+# ==================== DATABASE ====================
+*.db
+*.sqlite
+*.sqlite3
+postgres_data/
+.pgdata/
+
+# ==================== IDE & EDITOR ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.AppleDouble
+.LSOverride
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode-test
+.history/
+
+# ==================== OS FILES ====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==================== TESTING ====================
+coverage/
+.nyc_output/
+.mocha_output/
+*.lcov
+
+# ==================== TEMPORARY FILES ====================
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# ==================== UPLOADS & MEDIA ====================
+uploads/
+media/
+public/uploads/
+frontend/public/uploads/
+
+# ==================== CERTIFICATES ====================
+*.pem
+*.key
+*.crt
+*.cert
+
+# ==================== MISC ====================
+.cache/
+.parcel-cache
+dist-ssr/
+*.local
+.vuepress/dist
+.cache/
+.vuepress/dist
+.nuxt/
+dist/
+.cache/
+.output/
+.env.*.local
