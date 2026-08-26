@@ -276,6 +276,25 @@ app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
   }
 });
 
+// Delete Page
+app.delete('/api/pages/:pageId', verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'DELETE FROM pages WHERE id = $1 AND creator_id = $2 RETURNING id',
+      [req.params.pageId, req.creatorId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Page deletion error:', error);
+    res.status(500).json({ error: 'Failed to delete page' });
+  }
+});
+
 // ==================== ANALYTICS ROUTES ====================
 
 // Get Page Analytics
