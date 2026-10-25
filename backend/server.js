@@ -452,31 +452,9 @@ app.get('/api/badges', verifyToken, async (req, res) => {
   }
 });
 
-// Mint Badge (Placeholder for Solana integration)
-app.post('/api/badges/mint', verifyToken, async (req, res) => {
-  try {
-    return res.status(501).json({ error: 'On-chain badge minting is not implemented yet' });
-    /* const { badgeType } = req.body;
-    const badgeId = uuidv4();
-
-    // TODO: Integrate with Solana Web3.js for actual NFT minting
-    // For now, just save to database
-
-    const result = await pool.query(
-      `INSERT INTO badges (id, creator_id, badge_type, mint_address, created_at)
-       VALUES ($1, $2, $3, $4, NOW())
-       RETURNING *`,
-      [badgeId, req.creatorId, badgeType, `placeholder_${badgeId}`]
-    );
-
-    res.json({
-      success: true,
-      badge: result.rows[0]
-    }); */
-  } catch (error) {
-    console.error('Badge minting error:', error);
-    res.status(500).json({ error: 'Failed to mint badge' });
-  }
+// Minting is intentionally disabled until on-chain verification is implemented.
+app.post('/api/badges/mint', verifyToken, (req, res) => {
+  res.status(501).json({ error: 'On-chain badge minting is not implemented yet' });
 });
 
 // ==================== HEALTH CHECK ====================
