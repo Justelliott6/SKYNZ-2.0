@@ -197,14 +197,14 @@ app.put('/api/creator/profile', verifyToken, async (req, res) => {
 // Create SKYNZ Page
 app.post('/api/pages', verifyToken, async (req, res) => {
   try {
-    const { title, handle, description, platforms } = req.body;
+    const { title, handle, description, platforms, platform_urls } = req.body;
     const pageId = uuidv4();
 
     const result = await pool.query(
-      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, platform_urls, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
        RETURNING *`,
-      [pageId, req.creatorId, title, handle, description, JSON.stringify(platforms || [])]
+      [pageId, req.creatorId, title, handle, description, JSON.stringify(platforms || []), JSON.stringify(platform_urls || {})]
     );
 
     res.json({
@@ -269,7 +269,7 @@ app.get('/api/pages/edit/:pageId', verifyToken, async (req, res) => {
 // Update Page
 app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
   try {
-    const { title, description, platforms, embed_url, affiliate_link } = req.body;
+    const { title, description, platforms, embed_url, affiliate_link, platform_urls } = req.body;
 
     const result = await pool.query(
       `UPDATE pages 
@@ -277,10 +277,11 @@ app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
            description = COALESCE($2, description),
            platforms = COALESCE($3, platforms),
            embed_url = COALESCE($4, embed_url),
-           affiliate_link = COALESCE($5, affiliate_link)
+           affiliate_link = COALESCE($5, affiliate_link),
+           platform_urls = COALESCE($8, platform_urls)
        WHERE id = $6 AND creator_id = $7
        RETURNING *`,
-      [title, description, platforms === undefined ? null : JSON.stringify(platforms), embed_url, affiliate_link, req.params.pageId, req.creatorId]
+      [title, description, platforms === undefined ? null : JSON.stringify(platforms), embed_url, affiliate_link, req.params.pageId, req.creatorId, platform_urls === undefined ? null : JSON.stringify(platform_urls)]
     );
 
     if (result.rows.length === 0) {
