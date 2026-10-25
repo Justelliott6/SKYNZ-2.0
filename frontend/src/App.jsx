@@ -13,6 +13,7 @@ import PageBuilderPage from './pages/PageBuilderPage';
 import PublicCreatorPage from './pages/PublicCreatorPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import StreamingControlPage from './pages/StreamingControlPage';
+import FounderPreviewPage from './pages/FounderPreviewPage';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -36,6 +37,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/founders" element={<FounderPreviewPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/creator/:handle" element={<PublicCreatorPage />} />
 
