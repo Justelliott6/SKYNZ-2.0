@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiLogOut, FiHome, FiUser, FiEdit, FiBarChart2 } from 'react-icons/fi';
 import useAuthStore from '../store/authStore';
+import LippyChat from './LippyChat';
 
 const Navigation = () => {
   const { logout, user } = useAuthStore();
@@ -13,6 +14,7 @@ const Navigation = () => {
   };
 
   return (
+    <>
     <nav className="bg-gradient-to-r from-purple-900 via-black to-purple-900 border-b border-purple-500/30 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
@@ -52,6 +54,8 @@ const Navigation = () => {
         </div>
       </div>
     </nav>
+    <LippyChat />
+    </>
   );
 };
 
