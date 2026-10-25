@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
-import MediaWidgets from '../components/MediaWidgets';
+import MediaWidgets, { embedFor } from '../components/MediaWidgets';
 
 const PublicCreatorPage = () => {
   const { handle } = useParams();
@@ -108,10 +108,10 @@ const PublicCreatorPage = () => {
             <MediaWidgets page={page} />
 
             {/* Embed */}
-            {page.embed_url && (
+            {(embedFor('youtube', page.embed_url) || embedFor('spotify', page.embed_url)) && (
               <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl overflow-hidden">
                 <iframe
-                  src={page.embed_url}
+                  src={embedFor('youtube', page.embed_url) || embedFor('spotify', page.embed_url)}
                   width="100%"
                   height="400"
                   title={`${page.title} media player`}
