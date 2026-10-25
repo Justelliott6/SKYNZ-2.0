@@ -11,7 +11,8 @@ import DashboardPage from './pages/DashboardPage';
 import CreatorProfilePage from './pages/CreatorProfilePage';
 import PageBuilderPage from './pages/PageBuilderPage';
 import PublicCreatorPage from './pages/PublicCreatorPage';
-import AnalyticsPage from './pages/AnalyticsPage'
+import AnalyticsPage from './pages/AnalyticsPage';
+import StreamingControlPage from './pages/StreamingControlPage';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -39,6 +40,7 @@ function App() {
         <Route path="/creator/:handle" element={<PublicCreatorPage />} />
 
         {/* Protected Routes */}
+        <Route path="/streaming" element={<ProtectedRoute><Navigation /><StreamingControlPage /></ProtectedRoute>} />
         <Route
           path="/dashboard"
           element={
