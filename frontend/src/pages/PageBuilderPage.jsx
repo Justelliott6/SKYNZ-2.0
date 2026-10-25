@@ -11,6 +11,7 @@ const PageBuilderPage = () => {
   const [isLoading, setIsLoading] = useState(!!pageId);
   const [designPrompt, setDesignPrompt] = useState('');
   const [designFeedback, setDesignFeedback] = useState('');
+  const [mintPreview, setMintPreview] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     handle: '',
@@ -89,6 +90,19 @@ const PageBuilderPage = () => {
     setDesignFeedback(result.explanation);
   };
 
+  const checkMintPreview = async () => {
+    if (!pageId) return;
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages/${pageId}/mint-preview`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Unable to check mint preparation');
+      setMintPreview(await response.json());
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -138,6 +152,22 @@ const PageBuilderPage = () => {
             className="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-3 rounded-lg font-semibold">Apply design suggestions</button>
           {designFeedback && <p role="status" className="text-cyan-200 text-sm">{designFeedback}</p>}
         </section>
+
+        {pageId && (
+          <section className="bg-black/50 border border-purple-500/30 rounded-xl p-6 mb-6 space-y-3">
+            <h2 className="text-white text-xl font-bold">Mint Preparation</h2>
+            <p className="text-gray-300 text-sm">Save changes first, then inspect the stored page's metadata. Minting and publishing remain disabled.</p>
+            <button type="button" onClick={checkMintPreview}
+              className="bg-purple-700 text-white px-5 py-3 rounded-lg">Check saved page metadata</button>
+            {mintPreview && (
+              <div className="text-gray-200 text-sm space-y-2">
+                <p>Draft status: {mintPreview.publishStatus} | Mint: {mintPreview.mintStatus}</p>
+                <p>{mintPreview.readyForMetadataReview ? 'Metadata fields are ready for review.' : `Missing: ${mintPreview.missing.join(', ')}`}</p>
+                <pre className="whitespace-pre-wrap break-all bg-black p-3 rounded">{JSON.stringify(mintPreview.manifest, null, 2)}</pre>
+              </div>
+            )}
+          </section>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
