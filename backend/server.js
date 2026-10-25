@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import pg from 'pg';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { createAiRouter } from './ai/routes.js';
 import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
@@ -147,6 +148,8 @@ const verifyToken = (req, res, next) => {
     res.status(401).json({ error: 'Invalid token' });
   }
 };
+
+app.use('/api/ai', createAiRouter(verifyToken));
 
 // ==================== CREATOR PROFILE ROUTES ====================
 
