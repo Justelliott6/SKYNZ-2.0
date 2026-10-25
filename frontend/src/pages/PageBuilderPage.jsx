@@ -13,6 +13,7 @@ const PageBuilderPage = () => {
     handle: '',
     description: '',
     platforms: [],
+    platform_urls: {},
     embed_url: '',
     affiliate_link: ''
   });
@@ -51,6 +52,7 @@ const PageBuilderPage = () => {
         handle: data.handle,
         description: data.description,
         platforms: data.platforms || [],
+        platform_urls: data.platform_urls || {},
         embed_url: data.embed_url || '',
         affiliate_link: data.affiliate_link || ''
       });
@@ -187,6 +189,20 @@ const PageBuilderPage = () => {
               ))}
             </div>
           </div>
+
+          {formData.platforms.length > 0 && (
+            <div className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-6 space-y-3">
+              <h2 className="text-white text-xl font-bold">Your Platform Links</h2>
+              {formData.platforms.map(platform => (
+                <label key={platform} className="block text-gray-300 capitalize">
+                  {platform} URL
+                  <input type="url" placeholder="https://" value={formData.platform_urls[platform] || ''}
+                    onChange={e => setFormData(current => ({...current, platform_urls: {...current.platform_urls, [platform]: e.target.value}}))}
+                    className="block w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white mt-1" />
+                </label>
+              ))}
+            </div>
+          )}
 
           {/* Embeds & Links */}
           <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
