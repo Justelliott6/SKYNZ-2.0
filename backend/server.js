@@ -216,15 +216,15 @@ app.put('/api/streaming/session', verifyToken, (req, res) => {
 // Create SKYNZ Page
 app.post('/api/pages', verifyToken, async (req, res) => {
   try {
-    const { title, handle, description, platforms, platform_urls, widgets } = req.body;
+    const { title, handle, description, platforms, platform_urls, widgets, embed_url, affiliate_link } = req.body;
     if (widgets !== undefined && (!Array.isArray(widgets) || widgets.length > 12)) return res.status(400).json({ error: 'Invalid widgets' });
     const pageId = uuidv4();
 
     const result = await pool.query(
-      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, platform_urls, widgets, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, platform_urls, widgets, embed_url, affiliate_link, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
        RETURNING *`,
-      [pageId, req.creatorId, title, handle, description, JSON.stringify(platforms || []), JSON.stringify(platform_urls || {}), JSON.stringify(widgets || [])]
+      [pageId, req.creatorId, title, handle, description, JSON.stringify(platforms || []), JSON.stringify(platform_urls || {}), JSON.stringify(widgets || []), embed_url || null, affiliate_link || null]
     );
 
     res.json({
@@ -283,6 +283,34 @@ app.get('/api/pages/edit/:pageId', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Page edit fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch page' });
+  }
+});
+
+// Download a portable page configuration without authentication secrets.
+// Ownership is NOT transferred by this file; the on-chain asset remains authoritative.
+app.get('/api/pages/:pageId/export', verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, title, handle, description, platforms, platform_urls, widgets, embed_url, affiliate_link FROM pages WHERE id = $1 AND creator_id = $2',
+      [req.params.pageId, req.creatorId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Page not found' });
+    const page = result.rows[0];
+    res.set('Content-Disposition', 'attachment; filename="skynz-page-' + page.id + '.json"');
+    res.json({
+      format: 'skynz.page-config', version: 1,
+      exportedAt: new Date().toISOString(),
+      ownership: { status: 'NOT_VERIFIED', assetAddress: null, metadataUri: null },
+      page: {
+        title: page.title, handle: page.handle, description: page.description,
+        platforms: page.platforms || [], platform_urls: page.platform_urls || {},
+        widgets: page.widgets || [], embed_url: page.embed_url || '',
+        affiliate_link: page.affiliate_link || ''
+      }
+    });
+  } catch (error) {
+    console.error('Page export error:', error);
+    res.status(500).json({ error: 'Unable to export page' });
   }
 });
 
