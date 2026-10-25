@@ -6,6 +6,7 @@ import useAuthStore from '../store/authStore';
 
 const DashboardPage = () => {
   const [pages, setPages] = useState([]);
+  const [totalViews, setTotalViews] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { token, user } = useAuthStore();
 
@@ -23,6 +24,13 @@ const DashboardPage = () => {
 
       const data = await response.json();
       setPages(data);
+      const summary = await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/summary`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (summary.ok) {
+        const result = await summary.json();
+        setTotalViews(result.totalViews);
+      }
     } catch (error) {
       toast.error('Failed to load pages');
       console.error(error);
@@ -67,11 +75,11 @@ const DashboardPage = () => {
           </div>
           <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
             <p className="text-gray-400 text-sm">Total Views</p>
-            <p className="text-white text-3xl font-bold mt-2">0</p>
+            <p className="text-white text-3xl font-bold mt-2">{totalViews ?? 'Unavailable'}</p>
           </div>
           <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
             <p className="text-gray-400 text-sm">Earnings</p>
-            <p className="text-white text-3xl font-bold mt-2">$0</p>
+            <p className="text-white text-xl font-bold mt-2">Not enabled</p>
           </div>
         </div>
 
