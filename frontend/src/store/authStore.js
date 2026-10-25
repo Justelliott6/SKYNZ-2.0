@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 const useAuthStore = create((set) => ({
-  token: null,
+  token: localStorage.getItem('skynz_token'),
   user: null,
   isLoading: false,
   error: null,
