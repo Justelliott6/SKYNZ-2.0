@@ -7,6 +7,7 @@ import pg from 'pg';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import { supportedDestinations, getStreamSession, configureStream, summarizeMetrics } from './streaming/streamRegistry.js';
 
 dotenv.config();
 
@@ -189,6 +190,24 @@ app.put('/api/creator/profile', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Profile update error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Streaming control plane: configuration only, not an OBS relay.
+// Never return stream keys or accept provider secrets through these endpoints.
+app.get('/api/streaming/destinations', verifyToken, (req, res) => {
+  res.json(supportedDestinations);
+});
+app.get('/api/streaming/session', verifyToken, (req, res) => {
+  const session = getStreamSession(req.creatorId);
+  res.json({ ...session, analytics: summarizeMetrics(session.metrics) });
+});
+app.put('/api/streaming/session', verifyToken, (req, res) => {
+  try {
+    const session = configureStream(req.creatorId, req.body.destinations);
+    res.json(session);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
