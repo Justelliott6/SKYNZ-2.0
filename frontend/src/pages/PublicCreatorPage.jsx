@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
+import MediaWidgets from '../components/MediaWidgets';
 
 const PublicCreatorPage = () => {
   const { handle } = useParams();
@@ -103,6 +104,8 @@ const PublicCreatorPage = () => {
               <p className="text-gray-400 mb-4">@{page.handle}</p>
               <p className="text-gray-300">{page.description}</p>
             </div>
+
+            <MediaWidgets page={page} />
 
             {/* Embed */}
             {page.embed_url && (
