@@ -39,7 +39,7 @@ const PageBuilderPage = () => {
 
   const fetchPage = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages/${pageId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages/edit/${pageId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
