@@ -105,6 +105,27 @@ const PageBuilderPage = () => {
     }
   };
 
+  const downloadPage = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages/${pageId}/export`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Page export failed');
+      const data = await response.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `skynz-page-${pageId}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -158,6 +179,8 @@ const PageBuilderPage = () => {
         {pageId && (
           <section className="bg-black/50 border border-purple-500/30 rounded-xl p-6 mb-6 space-y-3">
             <h2 className="text-white text-xl font-bold">Mint Preparation</h2>
+            <button type="button" onClick={downloadPage}
+              className="bg-cyan-700 text-white px-5 py-3 rounded-lg">Download page configuration</button>
             <p className="text-gray-300 text-sm">Save changes first, then inspect the stored page's metadata. Minting and publishing remain disabled.</p>
             <button type="button" onClick={checkMintPreview}
               className="bg-purple-700 text-white px-5 py-3 rounded-lg">Check saved page metadata</button>
