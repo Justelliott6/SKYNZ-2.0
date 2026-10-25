@@ -18,6 +18,7 @@ const PageBuilderPage = () => {
     description: '',
     platforms: [],
     platform_urls: {},
+    widgets: [],
     embed_url: '',
     affiliate_link: ''
   });
@@ -57,6 +58,7 @@ const PageBuilderPage = () => {
         description: data.description,
         platforms: data.platforms || [],
         platform_urls: data.platform_urls || {},
+        widgets: data.widgets || [],
         embed_url: data.embed_url || '',
         affiliate_link: data.affiliate_link || ''
       });
@@ -253,6 +255,28 @@ const PageBuilderPage = () => {
               ))}
             </div>
           )}
+
+          <section className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-6 space-y-3">
+            <h2 className="text-white text-xl font-bold">Media & App Widgets</h2>
+            <p className="text-gray-300 text-sm">Add up to 12 boxes. YouTube and Spotify accept regular share links. App widgets use links until their integrations are ready.</p>
+            {(formData.widgets || []).map((widget, index) => (
+              <div key={index} className="bg-black/40 p-3 rounded-lg space-y-2">
+                <select value={widget.type} onChange={e => setFormData(prev => ({ ...prev, widgets: prev.widgets.map((w, i) => i === index ? {...w, type: e.target.value} : w) }))}
+                  className="bg-black text-white border border-purple-500 p-2 rounded">
+                  <option value="youtube">YouTube</option><option value="spotify">Spotify</option><option value="link">App / external link</option>
+                </select>
+                <input type="text" placeholder="Box title" value={widget.title || ''} onChange={e => setFormData(prev => ({...prev, widgets: prev.widgets.map((w,i) => i === index ? {...w, title:e.target.value} : w)}))}
+                  className="block w-full bg-black text-white p-2 border border-purple-500 rounded" />
+                <input type="url" placeholder="https://..." value={widget.url || ''} onChange={e => setFormData(prev => ({...prev, widgets: prev.widgets.map((w,i) => i === index ? {...w, url:e.target.value} : w)}))}
+                  className="block w-full bg-black text-white p-2 border border-purple-500 rounded" />
+                <button type="button" onClick={() => setFormData(prev => ({...prev, widgets: prev.widgets.filter((_,i) => i !== index)}))}
+                  className="text-red-300 underline">Remove box</button>
+              </div>
+            ))}
+            <button type="button" disabled={formData.widgets.length >= 12}
+              onClick={() => setFormData(prev => ({...prev, widgets:[...prev.widgets, {type:'youtube',title:'',url:''}]}))}
+              className="bg-purple-700 text-white rounded px-4 py-2 disabled:opacity-50">Add media or app box</button>
+          </section>
 
           {/* Embeds & Links */}
           <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
