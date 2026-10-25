@@ -266,6 +266,46 @@ app.get('/api/pages/edit/:pageId', verifyToken, async (req, res) => {
   }
 });
 
+// Mint preparation only. This endpoint does NOT mint, publish or verify ownership.
+// Return a deterministic draft manifest for future Metaplex Core / Irys integration.
+app.get('/api/pages/:pageId/mint-preview', verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, creator_id, title, handle, description, platforms, platform_urls, embed_url FROM pages WHERE id = $1 AND creator_id = $2',
+      [req.params.pageId, req.creatorId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Page not found' });
+    const page = result.rows[0];
+    const missing = [];
+    if (!page.title?.trim()) missing.push('title');
+    if (!page.handle?.trim()) missing.push('handle');
+    if (!page.description?.trim()) missing.push('description');
+    res.json({
+      readyForMetadataReview: missing.length === 0,
+      missing,
+      mintStatus: 'NOT_MINTED',
+      publishStatus: 'DRAFT',
+      ownershipVerified: false,
+      manifest: {
+        name: page.title,
+        description: page.description || '',
+        external_url: null,
+        properties: {
+          category: 'SKYNZ_CREATOR_PAGE',
+          pageId: page.id,
+          handle: page.handle,
+          platforms: page.platforms || [],
+          platform_urls: page.platform_urls || {},
+          embed_url: page.embed_url || null
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Mint preview error:', error);
+    res.status(500).json({ error: 'Unable to prepare mint preview' });
+  }
+});
+
 // Update Page
 app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
   try {
