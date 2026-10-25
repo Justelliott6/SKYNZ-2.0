@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS pages (
   description TEXT,
   platforms JSONB DEFAULT '[]',
   platform_urls JSONB NOT NULL DEFAULT '{}',
+  widgets JSONB NOT NULL DEFAULT '[]',
   embed_url VARCHAR(500),
   affiliate_link VARCHAR(500),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
