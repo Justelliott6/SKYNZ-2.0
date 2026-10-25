@@ -14,7 +14,8 @@ const PublicCreatorPage = () => {
 
   useEffect(() => {
     fetchPage();
-    initializeSocket();
+    const disconnect = initializeSocket();
+    return disconnect;
   }, [handle]);
 
   const fetchPage = async () => {
@@ -51,13 +52,20 @@ const PublicCreatorPage = () => {
 
     setSocket(newSocket);
 
-    return () => newSocket.disconnect();
+    return () => {
+      newSocket.disconnect();
+      setSocket(null);
+    };
   };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !username.trim()) return;
 
+    if (!socket?.connected) {
+      toast.error('Chat is disconnected');
+      return;
+    }
     socket.emit('send_message', {
       pageHandle: handle,
       username: username,
@@ -103,6 +111,7 @@ const PublicCreatorPage = () => {
                   src={page.embed_url}
                   width="100%"
                   height="400"
+                  title={`${page.title} media player`}
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -119,7 +128,9 @@ const PublicCreatorPage = () => {
                   {page.platforms.map((platform) => (
                     <a
                       key={platform}
-                      href="#"
+                      href={page.platform_urls?.[platform] || undefined}
+                      aria-disabled={!page.platform_urls?.[platform]}
+                      onClick={e => { if (!page.platform_urls?.[platform]) e.preventDefault(); }}
                       className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition capitalize"
                     >
                       {platform}
