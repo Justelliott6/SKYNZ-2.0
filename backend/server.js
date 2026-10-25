@@ -197,14 +197,15 @@ app.put('/api/creator/profile', verifyToken, async (req, res) => {
 // Create SKYNZ Page
 app.post('/api/pages', verifyToken, async (req, res) => {
   try {
-    const { title, handle, description, platforms, platform_urls } = req.body;
+    const { title, handle, description, platforms, platform_urls, widgets } = req.body;
+    if (widgets !== undefined && (!Array.isArray(widgets) || widgets.length > 12)) return res.status(400).json({ error: 'Invalid widgets' });
     const pageId = uuidv4();
 
     const result = await pool.query(
-      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, platform_urls, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, platform_urls, widgets, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
        RETURNING *`,
-      [pageId, req.creatorId, title, handle, description, JSON.stringify(platforms || []), JSON.stringify(platform_urls || {})]
+      [pageId, req.creatorId, title, handle, description, JSON.stringify(platforms || []), JSON.stringify(platform_urls || {}), JSON.stringify(widgets || [])]
     );
 
     res.json({
@@ -271,7 +272,7 @@ app.get('/api/pages/edit/:pageId', verifyToken, async (req, res) => {
 app.get('/api/pages/:pageId/mint-preview', verifyToken, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, creator_id, title, handle, description, platforms, platform_urls, embed_url FROM pages WHERE id = $1 AND creator_id = $2',
+      'SELECT id, creator_id, title, handle, description, platforms, platform_urls, widgets, embed_url FROM pages WHERE id = $1 AND creator_id = $2',
       [req.params.pageId, req.creatorId]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Page not found' });
@@ -296,6 +297,7 @@ app.get('/api/pages/:pageId/mint-preview', verifyToken, async (req, res) => {
           handle: page.handle,
           platforms: page.platforms || [],
           platform_urls: page.platform_urls || {},
+          widgets: page.widgets || [],
           embed_url: page.embed_url || null
         }
       }
@@ -309,7 +311,8 @@ app.get('/api/pages/:pageId/mint-preview', verifyToken, async (req, res) => {
 // Update Page
 app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
   try {
-    const { title, description, platforms, embed_url, affiliate_link, platform_urls } = req.body;
+    const { title, description, platforms, embed_url, affiliate_link, platform_urls, widgets } = req.body;
+    if (widgets !== undefined && (!Array.isArray(widgets) || widgets.length > 12)) return res.status(400).json({ error: 'Invalid widgets' });
 
     const result = await pool.query(
       `UPDATE pages 
@@ -318,10 +321,11 @@ app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
            platforms = COALESCE($3, platforms),
            embed_url = COALESCE($4, embed_url),
            affiliate_link = COALESCE($5, affiliate_link),
-           platform_urls = COALESCE($8, platform_urls)
+           platform_urls = COALESCE($8, platform_urls),
+           widgets = COALESCE($9, widgets)
        WHERE id = $6 AND creator_id = $7
        RETURNING *`,
-      [title, description, platforms === undefined ? null : JSON.stringify(platforms), embed_url, affiliate_link, req.params.pageId, req.creatorId, platform_urls === undefined ? null : JSON.stringify(platform_urls)]
+      [title, description, platforms === undefined ? null : JSON.stringify(platforms), embed_url, affiliate_link, req.params.pageId, req.creatorId, platform_urls === undefined ? null : JSON.stringify(platform_urls), widgets === undefined ? null : JSON.stringify(widgets)]
     );
 
     if (result.rows.length === 0) {
