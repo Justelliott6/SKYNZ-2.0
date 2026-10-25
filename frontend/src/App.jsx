@@ -31,7 +31,7 @@ function App() {
   }, [setToken]);
 
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL || '/'}>
       <Toaster position="top-right" />
       <Routes>
         {/* Public Routes */}
