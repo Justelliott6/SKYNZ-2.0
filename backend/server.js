@@ -30,7 +30,10 @@ const pool = new pg.Pool({
 });
 
 // JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  throw new Error('JWT_SECRET must be configured with at least 32 characters');
+}
 
 // ==================== AUTHENTICATION ROUTES ====================
 
@@ -248,6 +251,21 @@ app.get('/api/pages/:handle', async (req, res) => {
   }
 });
 
+// Retrieve a page for editing by its ID; restrict access to the owning creator.
+app.get('/api/pages/edit/:pageId', verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM pages WHERE id = $1 AND creator_id = $2',
+      [req.params.pageId, req.creatorId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Page not found' });
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Page edit fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch page' });
+  }
+});
+
 // Update Page
 app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
   try {
@@ -262,7 +280,7 @@ app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
            affiliate_link = COALESCE($5, affiliate_link)
        WHERE id = $6 AND creator_id = $7
        RETURNING *`,
-      [title, description, JSON.stringify(platforms), embed_url, affiliate_link, req.params.pageId, req.creatorId]
+      [title, description, platforms === undefined ? null : JSON.stringify(platforms), embed_url, affiliate_link, req.params.pageId, req.creatorId]
     );
 
     if (result.rows.length === 0) {
@@ -319,12 +337,15 @@ app.get('/api/analytics/:pageId', verifyToken, async (req, res) => {
 app.post('/api/analytics/view', async (req, res) => {
   try {
     const { pageId } = req.body;
+    if (!pageId) return res.status(400).json({ error: 'pageId required' });
+    const owner = await pool.query('SELECT creator_id FROM pages WHERE id = $1', [pageId]);
+    if (!owner.rows.length) return res.status(404).json({ error: 'Page not found' });
     const viewId = uuidv4();
 
     await pool.query(
-      `INSERT INTO analytics (id, page_id, event_type, created_at)
-       VALUES ($1, $2, 'page_view', NOW())`,
-      [viewId, pageId]
+      `INSERT INTO analytics (id, page_id, creator_id, event_type, created_at)
+       VALUES ($1, $2, $3, 'page_view', NOW())`,
+      [viewId, pageId, owner.rows[0].creator_id]
     );
 
     res.json({ success: true });
