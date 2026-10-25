@@ -20,7 +20,7 @@ const io = new Server(httpServer, {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
 app.use(express.json());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -315,6 +315,22 @@ app.delete('/api/pages/:pageId', verifyToken, async (req, res) => {
 
 // ==================== ANALYTICS ROUTES ====================
 
+// Aggregate persisted views for the creator dashboard.
+app.get('/api/analytics/summary', verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT p.id AS page_id, COUNT(a.id)::int AS views
+       FROM pages p LEFT JOIN analytics a ON a.page_id = p.id AND a.event_type = 'page_view'
+       WHERE p.creator_id = $1 GROUP BY p.id`,
+      [req.creatorId]
+    );
+    res.json({ totalViews: result.rows.reduce((sum, row) => sum + row.views, 0), pages: result.rows });
+  } catch (error) {
+    console.error('Analytics summary error:', error);
+    res.status(500).json({ error: 'Failed to fetch analytics summary' });
+  }
+});
+
 // Get Page Analytics
 app.get('/api/analytics/:pageId', verifyToken, async (req, res) => {
   try {
@@ -322,7 +338,7 @@ app.get('/api/analytics/:pageId', verifyToken, async (req, res) => {
       `SELECT * FROM analytics 
        WHERE page_id = $1 AND creator_id = $2
        ORDER BY created_at DESC
-       LIMIT 30`,
+       LIMIT 500`,
       [req.params.pageId, req.creatorId]
     );
 
@@ -376,7 +392,13 @@ io.on('connection', (socket) => {
   // Send chat message
   socket.on('send_message', async (data) => {
     try {
-      const { pageHandle, username, message } = data;
+      const { pageHandle, username, message } = data || {};
+      if (typeof pageHandle !== 'string' || typeof username !== 'string' || typeof message !== 'string' ||
+          !pageHandle.trim() || !username.trim() || !message.trim() || username.length > 60 || message.length > 1000 ||
+          activeSessions.get(socket.id)?.pageHandle !== pageHandle) {
+        socket.emit('chat_error', { message: 'Invalid chat message or room' });
+        return;
+      }
       const messageId = uuidv4();
 
       // Save to database
@@ -433,7 +455,8 @@ app.get('/api/badges', verifyToken, async (req, res) => {
 // Mint Badge (Placeholder for Solana integration)
 app.post('/api/badges/mint', verifyToken, async (req, res) => {
   try {
-    const { badgeType } = req.body;
+    return res.status(501).json({ error: 'On-chain badge minting is not implemented yet' });
+    /* const { badgeType } = req.body;
     const badgeId = uuidv4();
 
     // TODO: Integrate with Solana Web3.js for actual NFT minting
@@ -449,7 +472,7 @@ app.post('/api/badges/mint', verifyToken, async (req, res) => {
     res.json({
       success: true,
       badge: result.rows[0]
-    });
+    }); */
   } catch (error) {
     console.error('Badge minting error:', error);
     res.status(500).json({ error: 'Failed to mint badge' });
@@ -471,7 +494,7 @@ app.use((err, req, res, next) => {
 
 // ==================== START SERVER ====================
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 httpServer.listen(PORT, () => {
   console.log(`🚀 SKYNZ Backend running on port ${PORT}`);
