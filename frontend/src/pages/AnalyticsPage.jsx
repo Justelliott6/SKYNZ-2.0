@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -55,11 +55,11 @@ const AnalyticsPage = () => {
   };
 
   const chartData = {
-    labels: analytics.slice(-7).map((a, i) => `Day ${i + 1}`),
+    labels: analytics.slice(0, 7).reverse().map(a => new Date(a.created_at).toLocaleDateString()),
     datasets: [
       {
         label: 'Page Views',
-        data: analytics.slice(-7).map(a => a.visitor_count || 0),
+        data: analytics.slice(0, 7).reverse().map(a => a.visitor_count || 0),
         borderColor: '#9333ea',
         backgroundColor: 'rgba(147, 51, 234, 0.1)',
         tension: 0.4
@@ -111,7 +111,7 @@ const AnalyticsPage = () => {
               </div>
               <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
                 <p className="text-gray-400 text-sm">Last 7 Days</p>
-                <p className="text-white text-3xl font-bold mt-2">{analytics.length}</p>
+                <p className="text-white text-3xl font-bold mt-2">{analytics.filter(a => Date.now() - new Date(a.created_at).getTime() <= 7 * 86400000).length}</p>
               </div>
             </div>
 
