@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
+import { proposePageDesign } from '../utils/pageDesigner';
 
 const PageBuilderPage = () => {
   const { pageId } = useParams();
   const navigate = useNavigate();
   const { token } = useAuthStore();
   const [isLoading, setIsLoading] = useState(!!pageId);
+  const [designPrompt, setDesignPrompt] = useState('');
+  const [designFeedback, setDesignFeedback] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     handle: '',
@@ -80,6 +83,12 @@ const PageBuilderPage = () => {
     });
   };
 
+  const applyDesigner = () => {
+    const result = proposePageDesign(designPrompt, formData);
+    setFormData(current => ({ ...current, ...result.changes }));
+    setDesignFeedback(result.explanation);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -118,6 +127,17 @@ const PageBuilderPage = () => {
         <h1 className="text-white text-3xl font-bold mb-8">
           {pageId ? 'Edit Page' : 'Create New SKYNZ Page'}
         </h1>
+
+        <section className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-6 mb-6 space-y-3">
+          <h2 className="text-white text-xl font-bold">Page Designer Assistant</h2>
+          <p className="text-gray-300 text-sm">Describe the page you want. This first version runs locally without an AI subscription. Review and save its suggestions.</p>
+          <textarea value={designPrompt} onChange={e => setDesignPrompt(e.target.value)}
+            placeholder="Make a southern country rock music page with YouTube, Spotify and live chat"
+            className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white" rows={3} />
+          <button type="button" onClick={applyDesigner}
+            className="bg-cyan-700 hover:bg-cyan-600 text-white px-5 py-3 rounded-lg font-semibold">Apply design suggestions</button>
+          {designFeedback && <p role="status" className="text-cyan-200 text-sm">{designFeedback}</p>}
+        </section>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
