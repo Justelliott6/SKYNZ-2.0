@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiPlus, FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
+import PersonalCreatorApps from '../components/PersonalCreatorApps';
 
 const DashboardPage = () => {
   const [pages, setPages] = useState([]);
@@ -58,6 +59,8 @@ const DashboardPage = () => {
           <h1 className="text-white text-4xl font-bold mb-2">Dashboard</h1>
           <p className="text-gray-400">Welcome back, {user?.name}!</p>
         </div>
+
+        <div className="mb-8"><PersonalCreatorApps isOwner /></div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
