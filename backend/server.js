@@ -29,6 +29,18 @@ const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/skynz'
 });
 
+
+// Health diagnostics must not expose database credentials to the browser.
+function databaseErrorMessage(error) {
+  if (error?.code === '42P01') return 'SKYNZ database tables are missing. Initialize backend/database.sql.';
+  if (error?.code === '3D000') return 'SKYNZ database does not exist. Create the skynz PostgreSQL database.';
+  if (error?.code === '28P01') return 'SKYNZ database credentials are incorrect. Check DATABASE_URL.';
+  if (['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', '57P03'].includes(error?.code)) {
+    return 'Cannot connect to PostgreSQL. Check that it is running and DATABASE_URL is correct.';
+  }
+  return 'The SKYNZ database is unavailable. See the backend terminal for details.';
+}
+
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -79,7 +91,10 @@ app.post('/api/auth/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Registration failed' });
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Email or handle already exists' });
+    }
+    res.status(503).json({ error: databaseErrorMessage(error) });
   }
 });
 
@@ -126,7 +141,7 @@ app.post('/api/auth/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    res.status(503).json({ error: databaseErrorMessage(error) });
   }
 });
 
@@ -437,8 +452,19 @@ app.post('/api/badges/mint', verifyToken, async (req, res) => {
 
 // ==================== HEALTH CHECK ====================
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date() });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Testing the creators table confirms database connectivity AND registration readiness.
+    await pool.query('SELECT 1 FROM creators LIMIT 1');
+    res.json({ status: 'ok', database: 'ready', timestamp: new Date() });
+  } catch (error) {
+    console.error('Database health check failed:', error);
+    res.status(503).json({
+      status: 'not_ready',
+      database: 'unavailable',
+      error: databaseErrorMessage(error)
+    });
+  }
 });
 
 // ==================== ERROR HANDLING ====================
