@@ -12,7 +12,7 @@ const PANELS = [
   { id: 'floater', name: 'Floater Agent', icon: '🤖', subtitle: 'Agent operations' }
 ];
 
-export default function CreatorStudioShell({ handle = '', preview = false }) {
+export default function CreatorStudioShell({ handle = '', preview = false, pageTitle = '' }) {
   const [active, setActive] = useState('music');
   const panel = PANELS.find(item => item.id === active) || PANELS[0];
 
@@ -28,8 +28,9 @@ export default function CreatorStudioShell({ handle = '', preview = false }) {
                 <span className="block text-lg md:text-2xl font-medium text-gray-200 tracking-normal mt-3">Your page. Your vibe. Your stage.</span>
               </h1>
               <p className="mt-4 text-gray-400 max-w-2xl">Designed for the future. Built to run today.</p>
+              {pageTitle && <p className="mt-4 text-2xl font-semibold text-white">{pageTitle}</p>}
               <p className="mt-2 text-cyan-300 text-sm">
-                {preview ? 'Local development preview · No account or database required for music/video tools'
+                {preview ? 'Local page preview · @' + handle + ' · Music/video work without registration'
                   : 'Private creator workspace · @' + handle}
               </p>
             </div>
