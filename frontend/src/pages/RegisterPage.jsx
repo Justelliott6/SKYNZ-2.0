@@ -12,6 +12,7 @@ const RegisterPage = () => {
     confirmPassword: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState('');
   const { register } = useAuthStore();
   const navigate = useNavigate();
 
@@ -24,8 +25,10 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
 
     if (formData.password !== formData.confirmPassword) {
+      setFormError('Passwords do not match');
       toast.error('Passwords do not match');
       return;
     }
@@ -37,6 +40,7 @@ const RegisterPage = () => {
       toast.success('Registration successful!');
       navigate('/dashboard');
     } catch (error) {
+      setFormError(error.message || 'Registration failed');
       toast.error(error.message || 'Registration failed');
     } finally {
       setIsLoading(false);
@@ -131,6 +135,12 @@ const RegisterPage = () => {
           >
             {isLoading ? 'Creating Account...' : 'Register'}
           </button>
+
+          {formError && (
+            <p role="alert" className="mt-4 text-sm text-red-200 bg-red-900/30 border border-red-500/40 rounded-lg p-3">
+              {formError}
+            </p>
+          )}
 
           <p className="text-gray-400 text-center mt-4">
             Already have an account?{' '}
