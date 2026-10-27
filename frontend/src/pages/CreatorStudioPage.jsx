@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
@@ -16,7 +17,7 @@ export default function CreatorStudioPage() {
     async function verifyOwnership() {
       setStatus('loading');
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages`, {
+        const response = await fetch(`${API_URL}/api/pages`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Unable to verify page ownership');
