@@ -132,6 +132,13 @@ const DashboardPage = () => {
                           <FiEye size={18} />
                         </a>
                         <Link
+                          to={`/creator-studio/${page.handle}`}
+                          className="text-pink-300 hover:text-pink-200 text-sm font-semibold"
+                          title="Open private Creator Studio"
+                        >
+                          Studio
+                        </Link>
+                        <Link
                           to={`/page-builder/${page.id}`}
                           className="text-purple-400 hover:text-purple-300 transition"
                           title="Edit Page"
