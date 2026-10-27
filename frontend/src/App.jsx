@@ -12,6 +12,7 @@ import CreatorProfilePage from './pages/CreatorProfilePage';
 import PageBuilderPage from './pages/PageBuilderPage';
 import PublicCreatorPage from './pages/PublicCreatorPage';
 import CreatorStudioPage from './pages/CreatorStudioPage';
+import StudioPreviewPage from './pages/StudioPreviewPage';
 import AnalyticsPage from './pages/AnalyticsPage'
 
 // Components
@@ -38,6 +39,11 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/creator/:handle" element={<PublicCreatorPage />} />
+
+        {/* Local-development Creator Studio preview: no private credentials or endpoints. */}
+        {process.env.NODE_ENV === 'development' && (
+          <Route path="/studio-preview" element={<StudioPreviewPage />} />
+        )}
 
         {/* Private owner-only creator workspace */}
         <Route path="/creator-studio/:handle" element={
