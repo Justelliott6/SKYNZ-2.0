@@ -35,7 +35,7 @@ export default function ShieldDesk({ preview = false }) {
   const send = async event => {
     event.preventDefault();
     if (!model || !prompt.trim() || busy) return;
-    const next = [...messages.slice(-18), { role: 'user', content: prompt.trim().slice(0, 4000) }];
+    const next = [...messages.slice(-18).map(message => ({ ...message, content: message.content.slice(0, 4000) })), { role: 'user', content: prompt.trim().slice(0, 4000) }];
     setMessages(next);
     setPrompt('');
     setBusy(true); setStatus('Local model is thinking...');
