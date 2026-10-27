@@ -450,6 +450,82 @@ app.post('/api/badges/mint', verifyToken, async (req, res) => {
   }
 });
 
+
+// ==================== PRIVATE CREATOR STUDIO INTEGRATIONS ====================
+// These routes are protected by the creator token. Local models and the Floater
+// remain on loopback; the client cannot redirect this server to arbitrary URLs.
+const OLLAMA_LOCAL = 'http://127.0.0.1:11434';
+const FLOATER_LOCAL = 'http://127.0.0.1:37642';
+
+async function localGetJSON(url, timeoutMs = 3000) {
+  const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+  if (!response.ok) throw new Error('Local service returned ' + response.status);
+  return response.json();
+}
+
+app.get('/api/studio/models', verifyToken, async (req, res) => {
+  try {
+    const data = await localGetJSON(OLLAMA_LOCAL + '/api/tags');
+    const models = (data.models || [])
+      .filter(item => typeof item.name === 'string')
+      .map(item => ({ name: item.name, size: item.size || 0 }));
+    res.json({ connected: true, models });
+  } catch {
+    res.status(503).json({ connected: false, models: [], error: 'Ollama is not responding on this PC. Start Ollama and load a local model.' });
+  }
+});
+
+app.post('/api/studio/chat', verifyToken, async (req, res) => {
+  try {
+    const { model, messages } = req.body || {};
+    if (typeof model !== 'string' || !/^[\w.\-:/]{1,120}$/.test(model)) {
+      return res.status(400).json({ error: 'Select a valid local model.' });
+    }
+    if (!Array.isArray(messages) || messages.length < 1 || messages.length > 20 ||
+      messages.some(item => !item || !['user', 'assistant'].includes(item.role) ||
+        typeof item.content !== 'string' || !item.content.trim() || item.content.length > 4000)) {
+      return res.status(400).json({ error: 'Send one short message at a time (maximum 20 messages of 4,000 characters).' });
+    }
+    const installed = await localGetJSON(OLLAMA_LOCAL + '/api/tags', 3000);
+    if (!(installed.models || []).some(item => item.name === model)) {
+      return res.status(400).json({ error: 'This Ollama model is not installed on this PC.' });
+    }
+    const response = await fetch(OLLAMA_LOCAL + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, messages, stream: false }),
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!response.ok) return res.status(502).json({ error: 'The local AI model returned an error.' });
+    const data = await response.json();
+    const answer = String(data.message?.content || '');
+    if (!answer) return res.status(502).json({ error: 'The local model returned an empty answer.' });
+    res.json({ model, answer: answer.slice(0, 12000) });
+  } catch (error) {
+    console.error('Studio local AI error:', error?.message);
+    res.status(503).json({ error: 'Local AI is unavailable. Open Ollama and check the selected model.' });
+  }
+});
+
+app.get('/api/studio/floater/status', verifyToken, async (req, res) => {
+  try {
+    const state = await localGetJSON(FLOATER_LOCAL + '/api/state');
+    res.json({
+      connected: true,
+      paused: !!state.paused,
+      active: !!state.agentActive,
+      model: String(state.config?.model || ''),
+      taskCount: Array.isArray(state.tasks) ? state.tasks.length : 0,
+      approvalsPending: Array.isArray(state.approvals) ? state.approvals.length : 0,
+      tasks: (Array.isArray(state.tasks) ? state.tasks : []).slice(0, 5).map(task => ({
+        id: task.id, goal: String(task.goal || '').slice(0, 160), status: task.status
+      }))
+    });
+  } catch {
+    res.json({ connected: false, error: 'Floater Agent is not running at http://127.0.0.1:37642' });
+  }
+});
+
 // ==================== HEALTH CHECK ====================
 
 app.get('/api/health', async (req, res) => {
