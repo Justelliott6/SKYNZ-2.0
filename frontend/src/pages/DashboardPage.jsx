@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { FiPlus, FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
-import PersonalCreatorApps from '../components/PersonalCreatorApps';
 
 const DashboardPage = () => {
   const [pages, setPages] = useState([]);
@@ -61,7 +60,12 @@ const DashboardPage = () => {
           <p className="text-gray-400">Welcome back, {user?.name}!</p>
         </div>
 
-        <div className="mb-8"><PersonalCreatorApps isOwner /></div>
+
+        {process.env.NODE_ENV === 'development' && (
+          <Link to="/studio-preview" className="inline-block mb-8 text-white bg-purple-700 hover:bg-purple-600 rounded-lg px-5 py-3 font-semibold">
+            Open Creator Studio Preview
+          </Link>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
