@@ -85,6 +85,17 @@ const LandingPage = () => {
           </button>
         </div>
 
+        {/* Development-only working studio preview; no account or private data. */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="text-center space-y-2">
+            <button type="button" onClick={() => navigate('/studio-preview')}
+              className="inline-block rounded-xl border border-purple-400 bg-purple-900/60 px-7 py-4 text-lg text-white font-bold hover:bg-purple-800">
+              OPEN CREATOR STUDIO PREVIEW
+            </button>
+            <p className="text-gray-400 text-sm">Try music and video tools without registration</p>
+          </div>
+        )}
+
         {/* Footer text */}
         <div className="pt-12 text-gray-500 text-sm italic">
           <p>Still writing code after 8 months 🚀</p>
