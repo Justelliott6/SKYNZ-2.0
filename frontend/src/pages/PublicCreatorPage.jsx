@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -19,14 +20,14 @@ const PublicCreatorPage = () => {
 
   const fetchPage = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages/${handle}`);
+      const response = await fetch(`${API_URL}/api/pages/${handle}`);
       if (!response.ok) throw new Error('Page not found');
 
       const data = await response.json();
       setPage(data);
 
       // Record page view
-      await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/view`, {
+      await fetch(`${API_URL}/api/analytics/view`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pageId: data.id })
@@ -40,7 +41,7 @@ const PublicCreatorPage = () => {
   };
 
   const initializeSocket = () => {
-    const newSocket = io(process.env.REACT_APP_API_URL);
+    const newSocket = io(API_URL);
     newSocket.on('connect', () => {
       newSocket.emit('join_page', handle);
     });
