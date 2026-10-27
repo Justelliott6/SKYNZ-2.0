@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
@@ -17,7 +18,7 @@ const CreatorProfilePage = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/creator/profile`, {
+      const response = await fetch(`${API_URL}/api/creator/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -47,7 +48,7 @@ const CreatorProfilePage = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/creator/profile`, {
+      const response = await fetch(`${API_URL}/api/creator/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
