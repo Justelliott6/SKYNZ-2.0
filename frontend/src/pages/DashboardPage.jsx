@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiPlus, FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
@@ -16,7 +17,7 @@ const DashboardPage = () => {
 
   const fetchPages = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages`, {
+      const response = await fetch(`${API_URL}/api/pages`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -36,7 +37,7 @@ const DashboardPage = () => {
     if (!window.confirm('Are you sure you want to delete this page?')) return;
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages/${pageId}`, {
+      const response = await fetch(`${API_URL}/api/pages/${pageId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
