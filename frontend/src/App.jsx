@@ -11,6 +11,7 @@ import DashboardPage from './pages/DashboardPage';
 import CreatorProfilePage from './pages/CreatorProfilePage';
 import PageBuilderPage from './pages/PageBuilderPage';
 import PublicCreatorPage from './pages/PublicCreatorPage';
+import CreatorStudioPage from './pages/CreatorStudioPage';
 import AnalyticsPage from './pages/AnalyticsPage'
 
 // Components
@@ -37,6 +38,14 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/creator/:handle" element={<PublicCreatorPage />} />
+
+        {/* Private owner-only creator workspace */}
+        <Route path="/creator-studio/:handle" element={
+          <ProtectedRoute>
+            <Navigation />
+            <CreatorStudioPage />
+          </ProtectedRoute>
+        } />
 
         {/* Protected Routes */}
         <Route
