@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Line, Bar } from 'react-chartjs-2';
@@ -38,7 +39,7 @@ const AnalyticsPage = () => {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/${pageId}`, {
+      const response = await fetch(`${API_URL}/api/analytics/${pageId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
