@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -39,7 +40,7 @@ const PageBuilderPage = () => {
 
   const fetchPage = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages/${pageId}`, {
+      const response = await fetch(`${API_URL}/api/pages/${pageId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -85,8 +86,8 @@ const PageBuilderPage = () => {
     try {
       const method = pageId ? 'PUT' : 'POST';
       const url = pageId
-        ? `${process.env.REACT_APP_API_URL}/api/pages/${pageId}`
-        : `${process.env.REACT_APP_API_URL}/api/pages`;
+        ? `${API_URL}/api/pages/${pageId}`
+        : `${API_URL}/api/pages`;
 
       const response = await fetch(url, {
         method,
