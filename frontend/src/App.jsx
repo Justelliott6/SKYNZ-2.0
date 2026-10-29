@@ -5,6 +5,7 @@ import useAuthStore from './store/authStore';
 
 // Pages
 import LandingPage from './pages/LandingPage';
+import CreatorDemo from './pages/CreatorDemo';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -34,6 +35,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/demo" element={<CreatorDemo />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/creator/:handle" element={<PublicCreatorPage />} />
