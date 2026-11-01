@@ -24,7 +24,8 @@ const PublicCreatorPage = () => {
 
   useEffect(() => {
     fetchPage();
-    initializeSocket();
+    const disconnect = initializeSocket();
+    return () => disconnect && disconnect();
   }, [handle]);
 
   const fetchPage = async () => {
@@ -36,7 +37,7 @@ const PublicCreatorPage = () => {
       setPage(data);
 
       // Record page view
-      await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/view`, {
+      await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/api/analytics/view`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pageId: data.id })
@@ -50,7 +51,7 @@ const PublicCreatorPage = () => {
   };
 
   const initializeSocket = () => {
-    const newSocket = io(process.env.REACT_APP_API_URL);
+    const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000');
     newSocket.on('connect', () => {
       newSocket.emit('join_page', handle);
     });
@@ -124,9 +125,9 @@ const PublicCreatorPage = () => {
             )}
 
             {/* Support Link */}
-            {page.affiliate_link && (
+            {validLink(page.affiliate_link) && (
               <a
-                href={page.affiliate_link}
+                href={validLink(page.affiliate_link)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-lg text-center transition"
