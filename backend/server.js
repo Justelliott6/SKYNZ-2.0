@@ -30,7 +30,8 @@ const pool = new pg.Pool({
 });
 
 // JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) throw new Error('Set a unique JWT_SECRET of at least 32 characters in backend/.env');
 
 // ==================== AUTHENTICATION ROUTES ====================
 
@@ -256,7 +257,7 @@ app.get('/api/pages/id/:pageId',verifyToken,async(req,res)=>{
 app.get('/api/pages/:handle', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM pages WHERE handle = $1',
+      'SELECT id, title, handle, description, platforms, embed_url, second_embed_url, affiliate_link, social_links, theme, created_at FROM pages WHERE handle = $1',
       [req.params.handle]
     );
 
@@ -326,23 +327,19 @@ app.get('/api/analytics/:pageId', verifyToken, async (req, res) => {
   }
 });
 
-// Record Page View
-app.post('/api/analytics/view', async (req, res) => {
+// Record page view; creator_id must be populated to satisfy analytics schema.
+app.post('/api/analytics/view', async (req,res)=>{
   try {
-    const { pageId } = req.body;
-    const viewId = uuidv4();
-
-    await pool.query(
-      `INSERT INTO analytics (id, page_id, event_type, created_at)
-       VALUES ($1, $2, 'page_view', NOW())`,
-      [viewId, pageId]
+    const pageId=String(req.body.pageId||'');
+    if(!/^[0-9a-f-]{36}$/i.test(pageId))return res.status(400).json({error:'Invalid page ID'});
+    const result=await pool.query(
+      `INSERT INTO analytics (id,page_id,creator_id,event_type,created_at)
+       SELECT $1,p.id,p.creator_id,'page_view',NOW() FROM pages p WHERE p.id=$2 RETURNING id`,
+      [uuidv4(),pageId]
     );
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Analytics recording error:', error);
-    res.status(500).json({ error: 'Failed to record view' });
-  }
+    if(!result.rows.length)return res.status(404).json({error:'Page not found'});
+    res.json({success:true});
+  }catch(error){console.error('Analytics view error:',error);res.status(500).json({error:'Unable to record view'});}
 });
 
 // ==================== LIVE CHAT WITH SOCKET.IO ====================
@@ -420,30 +417,9 @@ app.get('/api/badges', verifyToken, async (req, res) => {
   }
 });
 
-// Mint Badge (Placeholder for Solana integration)
-app.post('/api/badges/mint', verifyToken, async (req, res) => {
-  try {
-    const { badgeType } = req.body;
-    const badgeId = uuidv4();
-
-    // TODO: Integrate with Solana Web3.js for actual NFT minting
-    // For now, just save to database
-
-    const result = await pool.query(
-      `INSERT INTO badges (id, creator_id, badge_type, mint_address, created_at)
-       VALUES ($1, $2, $3, $4, NOW())
-       RETURNING *`,
-      [badgeId, req.creatorId, badgeType, `placeholder_${badgeId}`]
-    );
-
-    res.json({
-      success: true,
-      badge: result.rows[0]
-    });
-  } catch (error) {
-    console.error('Badge minting error:', error);
-    res.status(500).json({ error: 'Failed to mint badge' });
-  }
+// Minting is intentionally disabled until the creator platform is approved and ready.
+app.post('/api/badges/mint',verifyToken,(_req,res)=>{
+  res.status(501).json({error:'Minting is not enabled. Creator pages work without blockchain.'});
 });
 
 // ==================== HEALTH CHECK ====================
