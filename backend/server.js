@@ -197,15 +197,15 @@ app.put('/api/creator/profile', verifyToken, async (req, res) => {
 // Create SKYNZ Page
 app.post('/api/pages', verifyToken, async (req, res) => {
   try {
-    const { title, handle, description, platforms, embed_url, affiliate_link } = req.body;
+    const { title, handle, description, platforms, social_links, embed_url, affiliate_link } = req.body;
     if (!title?.trim() || !handle?.trim()) return res.status(400).json({ error: 'Title and handle are required' });
     const pageId = uuidv4();
 
     const result = await pool.query(
-      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, embed_url, affiliate_link, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, social_links, embed_url, affiliate_link, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
        RETURNING *`,
-      [pageId, req.creatorId, title.trim(), handle.trim(), description || '', JSON.stringify(platforms || []), embed_url || null, affiliate_link || null]
+      [pageId, req.creatorId, title.trim(), handle.trim(), description || '', JSON.stringify(platforms || []), JSON.stringify(social_links || {}), embed_url || null, affiliate_link || null]
     );
 
     res.json({
@@ -270,18 +270,20 @@ app.get('/api/pages/:handle', async (req, res) => {
 // Update Page
 app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
   try {
-    const { title, description, platforms, embed_url, affiliate_link } = req.body;
+    const { title, handle, description, platforms, social_links, embed_url, affiliate_link } = req.body;
 
     const result = await pool.query(
       `UPDATE pages 
        SET title = COALESCE($1, title), 
-           description = COALESCE($2, description),
-           platforms = COALESCE($3, platforms),
-           embed_url = COALESCE($4, embed_url),
-           affiliate_link = COALESCE($5, affiliate_link)
-       WHERE id = $6 AND creator_id = $7
+           handle = COALESCE($2, handle),
+           description = COALESCE($3, description),
+           platforms = COALESCE($4, platforms),
+           social_links = COALESCE($5, social_links),
+           embed_url = COALESCE($6, embed_url),
+           affiliate_link = COALESCE($7, affiliate_link)
+       WHERE id = $8 AND creator_id = $9
        RETURNING *`,
-      [title, description, JSON.stringify(platforms), embed_url, affiliate_link, req.params.pageId, req.creatorId]
+      [title, handle, description, platforms ? JSON.stringify(platforms) : null, social_links ? JSON.stringify(social_links) : null, embed_url, affiliate_link, req.params.pageId, req.creatorId]
     );
 
     if (result.rows.length === 0) {
