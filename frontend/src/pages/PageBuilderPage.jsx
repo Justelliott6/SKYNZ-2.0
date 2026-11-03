@@ -10,7 +10,7 @@ const PLATFORMS = [
   ['patreon', 'Patreon', '♥'], ['twitter', 'X', '𝕏'], ['facebook', 'Facebook', 'f'],
   ['soundcloud', 'SoundCloud', '☁'], ['website', 'Website', '↗']
 ];
-const EMPTY = { title: '', handle: '', description: '', platforms: [], embed_url: '', affiliate_link: '' };
+const EMPTY = { title: '', handle: '', description: '', platforms: [], social_links: {}, embed_url: '', affiliate_link: '' };
 const inputClass = 'w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20';
 const safeUrl = (value) => {
   try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : ''; }
@@ -56,7 +56,7 @@ export default function PageBuilderPage() {
         const response = await fetch(`${API}/api/pages/id/${encodeURIComponent(pageId)}`, { headers: { Authorization: `Bearer ${token}` } });
         if (!response.ok) throw new Error('Could not load this page.');
         const page = await response.json();
-        if (active) setDraft({ ...EMPTY, ...page, platforms: Array.isArray(page.platforms) ? page.platforms : [] });
+        if (active) setDraft({ ...EMPTY, ...page, platforms: Array.isArray(page.platforms) ? page.platforms : [], social_links: page.social_links || {} });
       } catch (error) { if (active) toast.error(error.message); }
       finally { if (active) setLoading(false); }
     })();
@@ -178,8 +178,11 @@ export default function PageBuilderPage() {
                 {draft.embed_url && !previewEmbed && <p className="mt-2 text-sm text-amber-300">That link is saved as text, but this preview only embeds Spotify and YouTube.</p>}
               </section>}
               {tab === 'platforms' && <section>
-                <p className="mb-4 text-sm text-slate-400">Choose the services you want to show on your public page.</p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{PLATFORMS.map(([id, name, icon]) => <button key={id} type="button" onClick={() => togglePlatform(id)} aria-pressed={draft.platforms.includes(id)} className={`rounded-xl border p-4 text-left transition ${draft.platforms.includes(id) ? 'border-emerald-300 bg-emerald-300/10' : 'border-slate-700 bg-slate-950 hover:border-slate-500'}`}><span className="mr-2 text-lg" aria-hidden="true">{icon}</span><span className="font-semibold">{name}</span><span className="mt-1 block text-xs text-slate-400">{draft.platforms.includes(id) ? 'Selected' : 'Tap to add'}</span></button>)}</div>
+                <p className="mb-4 text-sm text-slate-400">Choose services and add the public profile URL for each. Only links you provide become clickable.</p>
+                <div className="space-y-3">{PLATFORMS.map(([id, name, icon]) => <div key={id} className={`rounded-xl border p-4 transition ${draft.platforms.includes(id) ? 'border-emerald-300/60 bg-emerald-300/5' : 'border-slate-700 bg-slate-950'}`}>
+                  <label className="flex cursor-pointer items-center gap-3"><input type="checkbox" checked={draft.platforms.includes(id)} onChange={() => togglePlatform(id)} className="h-4 w-4 accent-emerald-300"/><span className="text-lg" aria-hidden="true">{icon}</span><span className="font-semibold">{name}</span></label>
+                  {draft.platforms.includes(id) && <input type="url" aria-label={`${name} profile URL`} maxLength={500} className={`${inputClass} mt-3`} value={draft.social_links?.[id] || ''} onChange={(event) => setDraft((current) => ({ ...current, social_links: { ...(current.social_links || {}), [id]: event.target.value } }))} placeholder={`https://${id}.com/your-profile`} />}
+                </div>)}</div>
               </section>}
               {tab === 'design' && <section>
                 <Label htmlFor="accent">Accent color</Label><div className="flex items-center gap-4 rounded-xl border border-slate-700 bg-slate-950 p-4"><input id="accent" type="color" value={accent} onChange={(event) => setAccent(event.target.value)} className="h-12 w-16 cursor-pointer rounded border-0 bg-transparent"/><span className="text-sm text-slate-300">Use this color to preview your page highlight.</span></div>
@@ -199,7 +202,7 @@ export default function PageBuilderPage() {
                 <p className="mt-1 text-slate-400">@{draft.handle || 'your-handle'}</p>
                 <p className="mt-5 whitespace-pre-wrap break-words leading-relaxed text-slate-300">{draft.description || 'Your creator story appears here.'}</p>
                 {previewEmbed && <iframe title="Creator media preview" src={previewEmbed} className="mt-6 h-[230px] w-full rounded-xl bg-slate-900" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />}
-                {draft.platforms.length > 0 && <div className="mt-6"><div className="mb-2 text-sm font-semibold text-slate-300">Find me on</div><div className="flex flex-wrap gap-2">{draft.platforms.map((id) => <span key={id} className="rounded-lg border border-slate-600 px-3 py-2 text-sm capitalize text-slate-200">{PLATFORMS.find(([platform]) => platform === id)?.[1] || id}</span>)}</div></div>}
+                {draft.platforms.length > 0 && <div className="mt-6"><div className="mb-2 text-sm font-semibold text-slate-300">Find me on</div><div className="flex flex-wrap gap-2">{draft.platforms.map((id) => { const url = safeUrl(draft.social_links?.[id]); const name = PLATFORMS.find(([platform]) => platform === id)?.[1] || id; return url ? <a key={id} href={url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-slate-600 px-3 py-2 text-sm capitalize text-slate-200 hover:border-cyan-300">{name} ↗</a> : <span key={id} className="rounded-lg border border-slate-700 px-3 py-2 text-sm capitalize text-slate-500">{name} · add link</span>; })}</div></div>}
                 {safeUrl(draft.affiliate_link) && <a href={safeUrl(draft.affiliate_link)} target="_blank" rel="noopener noreferrer" className="mt-6 block rounded-xl py-3 text-center font-bold text-slate-950" style={{ backgroundColor: accent }}>Support this creator</a>}
               </div>
             </article>
