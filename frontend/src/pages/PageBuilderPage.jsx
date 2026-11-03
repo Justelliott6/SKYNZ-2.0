@@ -24,7 +24,30 @@ const inputStyle='w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py
 export default function PageBuilderPage() {
   const {pageId}=useParams(), navigate=useNavigate(), {token}=useAuthStore();
   const [data,setData]=useState(initial),[loading,setLoading]=useState(Boolean(pageId)),[saving,setSaving]=useState(false),[tab,setTab]=useState('identity');
+  const [aiInstruction,setAiInstruction]=useState(''),[aiProposal,setAiProposal]=useState(null),[aiLoading,setAiLoading]=useState(false),[aiProvider,setAiProvider]=useState('');
   const set=(key,value)=>setData(d=>({...d,[key]:value}));
+  const buildWithAi=async()=>{
+    if(!aiInstruction.trim()) return;
+    setAiLoading(true); setAiProposal(null);
+    try {
+      const response=await fetch(API+'/api/ai/page-draft',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+        body:JSON.stringify({instruction:aiInstruction.trim(),currentDraft:data})
+      });
+      const body=await response.json().catch(()=>({}));
+      if(!response.ok) throw new Error(body.error||'The page assistant is unavailable.');
+      setAiProposal(body);
+      setAiProvider((body.provider||'AI')+(body.model?' · '+body.model:''));
+    } catch(error) { toast.error(error.message||'Could not build the page draft.'); }
+    finally { setAiLoading(false); }
+  };
+  const applyAiProposal=()=>{
+    if(!aiProposal||!aiProposal.page) return;
+    setData(current=>({...current,...aiProposal.page,social_links:current.social_links}));
+    setAiProposal(null);
+    toast.success('Suggestions applied to your draft. Review the preview, then save when ready.');
+  };
   useEffect(()=>{
     if(!pageId) return;
     let live=true;
@@ -60,6 +83,32 @@ export default function PageBuilderPage() {
       </header>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <form onSubmit={save} className="rounded-2xl border border-slate-800 bg-[#101923] p-5 md:p-7">
+          <section aria-labelledby="page-agent-title" className="mb-6 rounded-2xl border border-cyan-400/30 bg-slate-950/70 p-5">
+            <div className="text-xs font-bold tracking-[.2em] text-cyan-200">AI PAGE-BUILDING AGENT</div>
+            <h2 id="page-agent-title" className="mt-1 text-lg font-bold text-white">Describe the page you want</h2>
+            <p className="mt-1 text-sm text-slate-400">The agent drafts your page fields for review. It cannot save or publish. Your profile URLs stay yours to enter.</p>
+            <label htmlFor="page-agent-instruction" className="mt-4 mb-2 block text-sm font-semibold text-slate-200">Your instructions</label>
+            <textarea id="page-agent-instruction" rows={3} maxLength={2000} className={inputStyle} value={aiInstruction} onChange={event=>setAiInstruction(event.target.value)} placeholder="Example: Build a warm Southern rock artist page with a short bio and amber theme." />
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs text-slate-500">Suggestion source: {aiProvider||"local Ollama"}</span>
+              <button type="button" disabled={aiLoading||!aiInstruction.trim()} onClick={buildWithAi} className="rounded-xl bg-cyan-300 px-4 py-2.5 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">{aiLoading?"Building draft…":"Build page draft"}</button>
+            </div>
+            {aiProposal && <div className="mt-4 rounded-xl border border-cyan-400/30 bg-slate-900 p-4">
+              <p className="text-sm font-semibold text-cyan-100">Suggested draft</p>
+              <p className="mt-1 text-sm text-slate-300">{aiProposal.explanation}</p>
+              <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                <div><span className="text-slate-500">Title</span><div>{aiProposal.page?.title||"—"}</div></div>
+                <div><span className="text-slate-500">Handle</span><div>@{aiProposal.page?.handle||"—"}</div></div>
+                <div className="sm:col-span-2"><span className="text-slate-500">About</span><div className="whitespace-pre-wrap">{aiProposal.page?.description||"—"}</div></div>
+                <div><span className="text-slate-500">Theme</span><div className="capitalize">{aiProposal.page?.theme||"emerald"}</div></div>
+                <div><span className="text-slate-500">Platforms</span><div>{(aiProposal.page?.platforms||[]).join(", ")||"None selected"}</div></div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button type="button" onClick={applyAiProposal} className="rounded-lg bg-emerald-300 px-4 py-2 font-bold text-slate-950">Apply suggestions to draft</button>
+                <button type="button" onClick={()=>setAiProposal(null)} className="rounded-lg border border-slate-600 px-4 py-2 text-slate-200">Discard</button>
+              </div>
+            </div>}
+          </section>
           <nav className="flex flex-wrap gap-2 mb-6" aria-label="Builder sections">{[['identity','Page'],['media','Media'],['social','Social'],['design','Design']].map(([key,name])=><button type="button" key={key} onClick={()=>setTab(key)} className={'px-4 py-2 rounded-xl text-sm font-semibold '+(tab===key?'bg-emerald-400 text-slate-950':'bg-slate-800 text-slate-300')}>{name}</button>)}</nav>
           {tab==='identity'&&<section>
             <Field label="Page title"><input required maxLength={120} className={inputStyle} value={data.title} onChange={e=>set('title',e.target.value)} placeholder="Your artist or creator name"/></Field>
