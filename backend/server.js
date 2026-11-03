@@ -197,14 +197,15 @@ app.put('/api/creator/profile', verifyToken, async (req, res) => {
 // Create SKYNZ Page
 app.post('/api/pages', verifyToken, async (req, res) => {
   try {
-    const { title, handle, description, platforms } = req.body;
+    const { title, handle, description, platforms, embed_url, affiliate_link } = req.body;
+    if (!title?.trim() || !handle?.trim()) return res.status(400).json({ error: 'Title and handle are required' });
     const pageId = uuidv4();
 
     const result = await pool.query(
-      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, embed_url, affiliate_link, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
        RETURNING *`,
-      [pageId, req.creatorId, title, handle, description, JSON.stringify(platforms || [])]
+      [pageId, req.creatorId, title.trim(), handle.trim(), description || '', JSON.stringify(platforms || []), embed_url || null, affiliate_link || null]
     );
 
     res.json({
@@ -229,6 +230,21 @@ app.get('/api/pages', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Pages fetch error:', error);
     res.status(500).json({ error: 'Failed to fetch pages' });
+  }
+});
+
+// Get a creator's page by ID for the authenticated builder.
+app.get('/api/pages/id/:pageId', verifyToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM pages WHERE id = $1 AND creator_id = $2',
+      [req.params.pageId, req.creatorId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Page not found' });
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Page fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch page' });
   }
 });
 
