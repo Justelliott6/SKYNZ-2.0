@@ -17,7 +17,7 @@ const publicEmbedUrl = (value) => {
       const id = url.searchParams.get('v'); return id ? 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) : '';
     }
     if (['youtube.com', 'www.youtube.com', 'www.youtube-nocookie.com'].includes(url.hostname) && url.pathname.startsWith('/embed/')) return safe;
-    if (url.hostname === 'open.spotify.com' && /^\\/(track|playlist|album|episode)\\//.test(url.pathname)) return 'https://open.spotify.com/embed' + url.pathname;
+    if (url.hostname === 'open.spotify.com' && /^\/(track|playlist|album|episode)\//.test(url.pathname)) return 'https://open.spotify.com/embed' + url.pathname;
   } catch { return ''; }
   return '';
 };
