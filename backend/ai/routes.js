@@ -43,10 +43,16 @@ function parseProposal(raw, currentDraft) {
   const candidate = parsed.page && typeof parsed.page === 'object' ? parsed.page : parsed;
   const proposed = normalizeDraft(candidate);
   const page = {
-    ...proposed,
+    ...currentDraft,
+    title: proposed.title || currentDraft.title,
+    handle: proposed.handle || currentDraft.handle,
+    description: proposed.description || currentDraft.description,
+    platforms: Array.isArray(candidate.platforms) ? proposed.platforms : currentDraft.platforms,
+    embed_url: proposed.embed_url || currentDraft.embed_url,
+    second_embed_url: proposed.second_embed_url || currentDraft.second_embed_url,
+    affiliate_link: proposed.affiliate_link || currentDraft.affiliate_link,
     // Creator-entered profile URLs are preserved; the model cannot invent or replace them.
     social_links: currentDraft.social_links,
-    platforms: proposed.platforms.length ? proposed.platforms : currentDraft.platforms,
     theme: ALLOWED_THEMES.has(candidate.theme) ? candidate.theme : currentDraft.theme
   };
   if (!page.title && !page.description && !page.platforms.length) throw new Error('Empty proposal');
