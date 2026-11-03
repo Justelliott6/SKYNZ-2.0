@@ -15,6 +15,7 @@ function safeHttpUrl(value) {
 }
 
 function normalizeDraft(value = {}) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) value = {};
   const sourceLinks = value.social_links && typeof value.social_links === 'object' && !Array.isArray(value.social_links) ? value.social_links : {};
   const socialLinks = {};
   for (const [platform, url] of Object.entries(sourceLinks)) {
