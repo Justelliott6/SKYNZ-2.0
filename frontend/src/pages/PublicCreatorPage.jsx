@@ -3,6 +3,26 @@ import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 
+const safeUrl = (value) => {
+  try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : ''; }
+  catch { return ''; }
+};
+const publicEmbedUrl = (value) => {
+  const safe = safeUrl(value);
+  if (!safe) return '';
+  try {
+    const url = new URL(safe);
+    if (url.hostname === 'youtu.be') return 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(url.pathname.slice(1));
+    if (['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(url.hostname) && url.pathname === '/watch') {
+      const id = url.searchParams.get('v'); return id ? 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) : '';
+    }
+    if (['youtube.com', 'www.youtube.com', 'www.youtube-nocookie.com'].includes(url.hostname) && url.pathname.startsWith('/embed/')) return safe;
+    if (url.hostname === 'open.spotify.com' && /^\\/(track|playlist|album|episode)\\//.test(url.pathname)) return 'https://open.spotify.com/embed' + url.pathname;
+  } catch { return ''; }
+  return '';
+};
+const platformNames = { youtube: 'YouTube', spotify: 'Spotify', twitch: 'Twitch', instagram: 'Instagram', tiktok: 'TikTok', discord: 'Discord', patreon: 'Patreon', twitter: 'X', facebook: 'Facebook', soundcloud: 'SoundCloud', website: 'Website' };
+
 const PublicCreatorPage = () => {
   const { handle } = useParams();
   const [page, setPage] = useState(null);
@@ -97,10 +117,10 @@ const PublicCreatorPage = () => {
             </div>
 
             {/* Embed */}
-            {page.embed_url && (
+            {publicEmbedUrl(page.embed_url) && (
               <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl overflow-hidden">
                 <iframe
-                  src={page.embed_url}
+                  src={publicEmbedUrl(page.embed_url)}
                   width="100%"
                   height="400"
                   frameBorder="0"
@@ -116,23 +136,26 @@ const PublicCreatorPage = () => {
               <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
                 <h3 className="text-white text-lg font-bold mb-4">Follow on:</h3>
                 <div className="flex flex-wrap gap-3">
-                  {page.platforms.map((platform) => (
-                    <a
-                      key={platform}
-                      href="#"
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition capitalize"
-                    >
-                      {platform}
-                    </a>
-                  ))}
+                  {page.platforms.map((platform) => {
+                    const key = typeof platform === 'string' ? platform : '';
+                    const href = safeUrl(page.social_links?.[key]);
+                    const label = platformNames[key] || key;
+                    return href ? (
+                      <a key={key} href={href} target="_blank" rel="noopener noreferrer" className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                        {label} ↗
+                      </a>
+                    ) : (
+                      <span key={key} className="bg-black/40 border border-purple-500/30 text-gray-300 px-4 py-2 rounded-lg capitalize">{label}</span>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Support Link */}
-            {page.affiliate_link && (
+            {safeUrl(page.affiliate_link) && (
               <a
-                href={page.affiliate_link}
+                href={safeUrl(page.affiliate_link)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-lg text-center transition"
