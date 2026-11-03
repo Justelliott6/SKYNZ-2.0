@@ -21,11 +21,15 @@ CREATE TABLE IF NOT EXISTS pages (
   handle VARCHAR(255) UNIQUE NOT NULL,
   description TEXT,
   platforms JSONB DEFAULT '[]',
+  social_links JSONB DEFAULT '{}'::jsonb,
   embed_url VARCHAR(500),
   affiliate_link VARCHAR(500),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add the optional profile-link map to databases created before this field existed.
+ALTER TABLE pages ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}'::jsonb;
 
 -- Analytics table
 CREATE TABLE IF NOT EXISTS analytics (
