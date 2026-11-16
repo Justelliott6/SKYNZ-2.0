@@ -1,0 +1,50 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/SKYNZ-2.0/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/SKYNZ-2.0/static/:path*",
+      "destination": "/static/:path*"
+    },
+    {
+      "source": "/SKYNZ-2.0/themes/:path*",
+      "destination": "/themes/:path*"
+    },
+    {
+      "source": "/SKYNZ-2.0/preview.js",
+      "destination": "/preview.js"
+    },
+    {
+      "source": "/SKYNZ-2.0/asset-manifest.json",
+      "destination": "/asset-manifest.json"
+    },
+    {
+      "source": "/SKYNZ-2.0/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/SKYNZ-2.0/:path*",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/SKYNZ-2.0/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ]
+}
