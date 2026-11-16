@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 
+// Restore a saved session before ProtectedRoute's first render.
+// A late useEffect restore caused a redirect to /login on page reopen.
+const getInitialToken = () => {
+  try { return localStorage.getItem('skynz_token'); } catch { return null; }
+};
+
 const useAuthStore = create((set) => ({
-  token: null,
+  token: getInitialToken(),
   user: null,
   isLoading: false,
   error: null,
