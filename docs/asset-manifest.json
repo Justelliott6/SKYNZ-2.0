@@ -1,0 +1,11 @@
+{
+  "files": {
+    "main.css": "/SKYNZ-2.0/static/css/main.cec5b7d1.css",
+    "main.js": "/SKYNZ-2.0/static/js/main.5c34fc1a.js",
+    "index.html": "/SKYNZ-2.0/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.cec5b7d1.css",
+    "static/js/main.5c34fc1a.js"
+  ]
+}
