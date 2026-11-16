@@ -16,7 +16,7 @@ const embedURL = (value) => {
     if(u.hostname==='youtu.be') return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(u.pathname.slice(1));
     if(['youtube.com','www.youtube.com','m.youtube.com'].includes(u.hostname) && u.pathname==='/watch') return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(u.searchParams.get('v')||'');
     if(['youtube.com','www.youtube.com','www.youtube-nocookie.com'].includes(u.hostname) && u.pathname.startsWith('/embed/')) return url;
-    if(u.hostname==='open.spotify.com' && /^\/(track|playlist|album|episode)\//.test(u.pathname)) return 'https://open.spotify.com/embed'+u.pathname;
+    if(u.hostname==='open.spotify.com') { const match=u.pathname.match(/^\/(?:embed\/)?(track|playlist|album|episode|artist|show)\/([A-Za-z0-9]+)\/?$/); if(match) return 'https://open.spotify.com/embed/'+match[1]+'/'+match[2]; }
     return '';
   } catch { return ''; }
 };
