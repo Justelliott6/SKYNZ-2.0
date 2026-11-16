@@ -3,6 +3,16 @@ import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 
+const validLink = (v) => { try { const u=new URL(v); return ['https:','http:'].includes(u.protocol)?u.href:''; } catch { return ''; } };
+const mediaLink = (v) => { try {
+  const u=new URL(v);
+  if(u.hostname==='youtu.be') return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(u.pathname.slice(1));
+  if(['youtube.com','www.youtube.com','m.youtube.com'].includes(u.hostname)&&u.pathname==='/watch') return 'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(u.searchParams.get('v')||'');
+  if(['youtube.com','www.youtube.com','www.youtube-nocookie.com'].includes(u.hostname)&&u.pathname.startsWith('/embed/')) return validLink(v);
+  if(u.hostname==='open.spotify.com'&&/^\/(track|playlist|album|episode)\//.test(u.pathname))return 'https://open.spotify.com/embed'+u.pathname;
+  return '';
+} catch {return '';} };
+const accents={emerald:'#39d99a',cyan:'#37b9ed',amber:'#f3b657',rose:'#f07b99'};
 const PublicCreatorPage = () => {
   const { handle } = useParams();
   const [page, setPage] = useState(null);
@@ -14,7 +24,8 @@ const PublicCreatorPage = () => {
 
   useEffect(() => {
     fetchPage();
-    initializeSocket();
+    const disconnect = initializeSocket();
+    return () => disconnect && disconnect();
   }, [handle]);
 
   const fetchPage = async () => {
@@ -26,7 +37,7 @@ const PublicCreatorPage = () => {
       setPage(data);
 
       // Record page view
-      await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/view`, {
+      await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/api/analytics/view`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pageId: data.id })
@@ -40,7 +51,7 @@ const PublicCreatorPage = () => {
   };
 
   const initializeSocket = () => {
-    const newSocket = io(process.env.REACT_APP_API_URL);
+    const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000');
     newSocket.on('connect', () => {
       newSocket.emit('join_page', handle);
     });
@@ -58,6 +69,7 @@ const PublicCreatorPage = () => {
     e.preventDefault();
     if (!newMessage.trim() || !username.trim()) return;
 
+    if (!socket) return;
     socket.emit('send_message', {
       pageHandle: handle,
       username: username,
@@ -84,7 +96,7 @@ const PublicCreatorPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-4 md:p-8">
+    <div className="min-h-screen bg-[#080e14] text-white p-4 md:p-8" style={{borderTop:`6px solid ${accents[page.theme]||accents.emerald}`}}>
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -96,43 +108,26 @@ const PublicCreatorPage = () => {
               <p className="text-gray-300">{page.description}</p>
             </div>
 
-            {/* Embed */}
-            {page.embed_url && (
-              <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl overflow-hidden">
-                <iframe
-                  src={page.embed_url}
-                  width="100%"
-                  height="400"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full"
-                />
+            {/* Supported media players */}
+            {[page.embed_url,page.second_embed_url].filter(Boolean).map((url,i)=>mediaLink(url)&&(
+              <div key={i} className="rounded-xl overflow-hidden border border-slate-700 bg-slate-900">
+                <iframe title={'Creator player '+(i+1)} src={mediaLink(url)} width="100%" height="300" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
               </div>
-            )}
-
-            {/* Platforms */}
-            {page.platforms && page.platforms.length > 0 && (
-              <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
-                <h3 className="text-white text-lg font-bold mb-4">Follow on:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {page.platforms.map((platform) => (
-                    <a
-                      key={platform}
-                      href="#"
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition capitalize"
-                    >
-                      {platform}
-                    </a>
-                  ))}
-                </div>
+            ))}
+            {/* Verified creator-supplied links */}
+            {page.social_links && Object.entries(page.social_links).some(([,url])=>validLink(url)) && (
+              <div className="rounded-xl border border-slate-700 bg-slate-900 p-6">
+                <h3 className="font-bold mb-4">Find me online</h3>
+                <div className="flex flex-wrap gap-3">{Object.entries(page.social_links).filter(([,url])=>validLink(url)).map(([name,url])=>(
+                  <a key={name} href={validLink(url)} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-slate-600 px-4 py-2 capitalize hover:border-emerald-400">{name}</a>
+                ))}</div>
               </div>
             )}
 
             {/* Support Link */}
-            {page.affiliate_link && (
+            {validLink(page.affiliate_link) && (
               <a
-                href={page.affiliate_link}
+                href={validLink(page.affiliate_link)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-lg text-center transition"

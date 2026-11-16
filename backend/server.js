@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import pg from 'pg';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { createAiRouter } from './ai/routes.js';
 import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
@@ -30,7 +31,8 @@ const pool = new pg.Pool({
 });
 
 // JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) throw new Error('Set a unique JWT_SECRET of at least 32 characters in backend/.env');
 
 // ==================== AUTHENTICATION ROUTES ====================
 
@@ -148,6 +150,8 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+app.use('/api/ai', createAiRouter(verifyToken));
+
 // ==================== CREATOR PROFILE ROUTES ====================
 
 // Get Creator Profile
@@ -189,28 +193,42 @@ app.put('/api/creator/profile', verifyToken, async (req, res) => {
   }
 });
 
+// Creator-page configuration upgrade. Run backend/creator_page_upgrade.sql once before use.
+const normalizePageInput = (body) => {
+  const social = body.social_links && typeof body.social_links === 'object' && !Array.isArray(body.social_links) ? body.social_links : {};
+  const links = Object.fromEntries(Object.entries(social).filter(([k,v]) =>
+    /^[a-z_]{2,30}$/.test(k) && typeof v === 'string' && v.length <= 500 &&
+    (v === '' || /^https?:\/\//i.test(v))
+  ));
+  return {
+    title: String(body.title || '').trim().slice(0,120),
+    handle: String(body.handle || '').trim().toLowerCase().replace(/^@/,'').slice(0,50),
+    description: String(body.description || '').slice(0,1500),
+    platforms: Array.isArray(body.platforms) ? body.platforms.slice(0,30) : [],
+    embed_url: String(body.embed_url || '').slice(0,500),
+    second_embed_url: String(body.second_embed_url || '').slice(0,500),
+    affiliate_link: String(body.affiliate_link || '').slice(0,500),
+    social_links: links,
+    theme: ['emerald','cyan','amber','rose'].includes(body.theme) ? body.theme : 'emerald'
+  };
+};
+
 // ==================== SKYNZ PAGE ROUTES ====================
 
 // Create SKYNZ Page
-app.post('/api/pages', verifyToken, async (req, res) => {
+app.post('/api/pages', verifyToken, async (req,res) => {
   try {
-    const { title, handle, description, platforms } = req.body;
-    const pageId = uuidv4();
-
-    const result = await pool.query(
-      `INSERT INTO pages (id, creator_id, title, handle, description, platforms, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())
-       RETURNING *`,
-      [pageId, req.creatorId, title, handle, description, JSON.stringify(platforms || [])]
+    const p=normalizePageInput(req.body);
+    if (!p.title || !/^[a-z0-9_-]{2,50}$/.test(p.handle)) return res.status(400).json({error:'Valid title and handle required'});
+    const result=await pool.query(
+      `INSERT INTO pages (id,creator_id,title,handle,description,platforms,embed_url,second_embed_url,affiliate_link,social_links,theme,created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW()) RETURNING *`,
+      [uuidv4(),req.creatorId,p.title,p.handle,p.description,JSON.stringify(p.platforms),p.embed_url,p.second_embed_url,p.affiliate_link,JSON.stringify(p.social_links),p.theme]
     );
-
-    res.json({
-      success: true,
-      page: result.rows[0]
-    });
-  } catch (error) {
-    console.error('Page creation error:', error);
-    res.status(500).json({ error: 'Failed to create page' });
+    res.status(201).json({success:true,page:result.rows[0]});
+  } catch(error) {
+    console.error('Page creation error:',error);
+    res.status(error.code==='23505'?409:500).json({error:error.code==='23505'?'Handle already taken':'Failed to create page'});
   }
 });
 
@@ -229,11 +247,20 @@ app.get('/api/pages', verifyToken, async (req, res) => {
   }
 });
 
+// Private page lookup by ID; ownership enforced.
+app.get('/api/pages/id/:pageId',verifyToken,async(req,res)=>{
+  try {
+    const result=await pool.query('SELECT * FROM pages WHERE id=$1 AND creator_id=$2',[req.params.pageId,req.creatorId]);
+    if(!result.rows.length)return res.status(404).json({error:'Page not found'});
+    res.json(result.rows[0]);
+  }catch(error){console.error(error);res.status(500).json({error:'Unable to load page'});}
+});
+
 // Get Single Page by Handle (Public)
 app.get('/api/pages/:handle', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM pages WHERE handle = $1',
+      'SELECT id, title, handle, description, platforms, embed_url, second_embed_url, affiliate_link, social_links, theme, created_at FROM pages WHERE handle = $1',
       [req.params.handle]
     );
 
@@ -249,31 +276,19 @@ app.get('/api/pages/:handle', async (req, res) => {
 });
 
 // Update Page
-app.put('/api/pages/:pageId', verifyToken, async (req, res) => {
+app.put('/api/pages/:pageId',verifyToken,async(req,res)=>{
   try {
-    const { title, description, platforms, embed_url, affiliate_link } = req.body;
-
-    const result = await pool.query(
-      `UPDATE pages 
-       SET title = COALESCE($1, title), 
-           description = COALESCE($2, description),
-           platforms = COALESCE($3, platforms),
-           embed_url = COALESCE($4, embed_url),
-           affiliate_link = COALESCE($5, affiliate_link)
-       WHERE id = $6 AND creator_id = $7
-       RETURNING *`,
-      [title, description, JSON.stringify(platforms), embed_url, affiliate_link, req.params.pageId, req.creatorId]
+    const p=normalizePageInput(req.body);
+    if (!p.title || !/^[a-z0-9_-]{2,50}$/.test(p.handle)) return res.status(400).json({error:'Valid title and handle required'});
+    const result=await pool.query(
+      `UPDATE pages SET title=$1,handle=$2,description=$3,platforms=$4,embed_url=$5,
+       second_embed_url=$6,affiliate_link=$7,social_links=$8,theme=$9,updated_at=NOW()
+       WHERE id=$10 AND creator_id=$11 RETURNING *`,
+      [p.title,p.handle,p.description,JSON.stringify(p.platforms),p.embed_url,p.second_embed_url,p.affiliate_link,JSON.stringify(p.social_links),p.theme,req.params.pageId,req.creatorId]
     );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Page not found' });
-    }
-
+    if(!result.rows.length)return res.status(404).json({error:'Page not found'});
     res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Page update error:', error);
-    res.status(500).json({ error: 'Failed to update page' });
-  }
+  }catch(error){console.error('Page update error:',error);res.status(error.code==='23505'?409:500).json({error:error.code==='23505'?'Handle already taken':'Failed to update page'});}
 });
 
 // Delete Page
@@ -315,23 +330,19 @@ app.get('/api/analytics/:pageId', verifyToken, async (req, res) => {
   }
 });
 
-// Record Page View
-app.post('/api/analytics/view', async (req, res) => {
+// Record page view; creator_id must be populated to satisfy analytics schema.
+app.post('/api/analytics/view', async (req,res)=>{
   try {
-    const { pageId } = req.body;
-    const viewId = uuidv4();
-
-    await pool.query(
-      `INSERT INTO analytics (id, page_id, event_type, created_at)
-       VALUES ($1, $2, 'page_view', NOW())`,
-      [viewId, pageId]
+    const pageId=String(req.body.pageId||'');
+    if(!/^[0-9a-f-]{36}$/i.test(pageId))return res.status(400).json({error:'Invalid page ID'});
+    const result=await pool.query(
+      `INSERT INTO analytics (id,page_id,creator_id,event_type,created_at)
+       SELECT $1,p.id,p.creator_id,'page_view',NOW() FROM pages p WHERE p.id=$2 RETURNING id`,
+      [uuidv4(),pageId]
     );
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Analytics recording error:', error);
-    res.status(500).json({ error: 'Failed to record view' });
-  }
+    if(!result.rows.length)return res.status(404).json({error:'Page not found'});
+    res.json({success:true});
+  }catch(error){console.error('Analytics view error:',error);res.status(500).json({error:'Unable to record view'});}
 });
 
 // ==================== LIVE CHAT WITH SOCKET.IO ====================
@@ -409,30 +420,9 @@ app.get('/api/badges', verifyToken, async (req, res) => {
   }
 });
 
-// Mint Badge (Placeholder for Solana integration)
-app.post('/api/badges/mint', verifyToken, async (req, res) => {
-  try {
-    const { badgeType } = req.body;
-    const badgeId = uuidv4();
-
-    // TODO: Integrate with Solana Web3.js for actual NFT minting
-    // For now, just save to database
-
-    const result = await pool.query(
-      `INSERT INTO badges (id, creator_id, badge_type, mint_address, created_at)
-       VALUES ($1, $2, $3, $4, NOW())
-       RETURNING *`,
-      [badgeId, req.creatorId, badgeType, `placeholder_${badgeId}`]
-    );
-
-    res.json({
-      success: true,
-      badge: result.rows[0]
-    });
-  } catch (error) {
-    console.error('Badge minting error:', error);
-    res.status(500).json({ error: 'Failed to mint badge' });
-  }
+// Minting is intentionally disabled until the creator platform is approved and ready.
+app.post('/api/badges/mint',verifyToken,(_req,res)=>{
+  res.status(501).json({error:'Minting is not enabled. Creator pages work without blockchain.'});
 });
 
 // ==================== HEALTH CHECK ====================
