@@ -442,7 +442,8 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-httpServer.listen(PORT, () => {
+// Bind to loopback by default for the local Windows release. Set SKYNZ_BIND_HOST explicitly for a reviewed hosted deployment.
+httpServer.listen(PORT, process.env.SKYNZ_BIND_HOST || '127.0.0.1', () => {
   console.log(`🚀 SKYNZ Backend running on port ${PORT}`);
   console.log(`📊 WebSocket server ready for real-time features`);
 });
