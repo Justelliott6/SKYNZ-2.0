@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
+import { CREATOR_THEMES, CREATOR_THEME_IDS, getCreatorTheme } from '../theme/creatorThemes';
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 const PLATFORMS = ['spotify','youtube','facebook','instagram','tiktok','twitch','soundcloud','discord','website'];
 const initial = {title:'',handle:'',description:'',platforms:[],embed_url:'',affiliate_link:'',social_links:{},theme:'emerald',second_embed_url:''};
-const colors = {emerald:'#39d99a',cyan:'#37b9ed',amber:'#f3b657',rose:'#f07b99'};
+const colors = Object.fromEntries(CREATOR_THEME_IDS.map(id => [id, CREATOR_THEMES[id].accent]));
 const safeURL = (value) => { try { const u = new URL(value); return ['https:','http:'].includes(u.protocol) ? u.href : ''; } catch { return ''; } };
 const embedURL = (value) => {
   const url=safeURL(value); if(!url) return '';
@@ -73,7 +74,8 @@ export default function PageBuilderPage() {
       navigate('/dashboard');
     }catch(e){toast.error(e.message);}finally{setSaving(false);}
   };
-  const accent=colors[data.theme]||colors.emerald;
+  const visualTheme = getCreatorTheme(data.theme);
+  const accent=visualTheme.accent;
   if(loading)return <main className="min-h-screen bg-slate-950 text-white p-10">Loading creator page…</main>;
   return <main className="min-h-screen bg-[#080e14] text-white px-4 py-7 md:px-8">
     <div className="max-w-[1450px] mx-auto">
@@ -121,13 +123,13 @@ export default function PageBuilderPage() {
             <Field label="Second player URL"><input type="url" className={inputStyle} value={data.second_embed_url||''} onChange={e=>set('second_embed_url',e.target.value)} placeholder="https://www.youtube.com/watch?v=..."/></Field>
           </section>}
           {tab==='social'&&<section><p className="text-slate-400 text-sm mb-4">Only links you enter will appear on the published page.</p>{PLATFORMS.map(p=><Field key={p} label={p[0].toUpperCase()+p.slice(1)}><input type="url" className={inputStyle} value={data.social_links?.[p]||''} onChange={e=>set('social_links',{...data.social_links,[p]:e.target.value})} placeholder={'https://'+p+'.com/...'} /></Field>)}</section>}
-          {tab==='design'&&<section><p className="text-slate-300 mb-4">Accent color</p><div className="flex flex-wrap gap-3">{Object.entries(colors).map(([name,color])=><button key={name} type="button" aria-label={name} aria-pressed={data.theme===name} onClick={()=>set('theme',name)} style={{borderColor:data.theme===name?color:'#475569'}} className="rounded-xl border-2 px-4 py-3 capitalize" ><span style={{background:color}} className="inline-block w-3 h-3 rounded-full mr-2"/>{name}</button>)}</div></section>}
+          {tab==='design'&&<section><p className="text-slate-300 mb-4">Creator page style — each preset changes the background, borders and palette in the live page. Artwork can be added in a later asset pack.</p><div className="flex flex-wrap gap-3">{Object.entries(colors).map(([name,color])=><button key={name} type="button" aria-label={CREATOR_THEMES[name].label} aria-pressed={data.theme===name} onClick={()=>set('theme',name)} style={{borderColor:data.theme===name?color:'#475569'}} className="rounded-xl border-2 px-4 py-3 capitalize" ><span style={{background:color}} className="inline-block w-3 h-3 rounded-full mr-2"/>{CREATOR_THEMES[name].label}</button>)}</div></section>}
           <div className="flex flex-wrap gap-3 pt-5 border-t border-slate-800 mt-6"><button disabled={saving} type="submit" className="rounded-xl px-6 py-3 font-bold text-slate-950 disabled:opacity-50" style={{background:accent}}>{saving?'Saving…':pageId?'Save changes':'Create page'}</button><button type="button" onClick={()=>navigate('/dashboard')} className="rounded-xl border border-slate-600 px-5 py-3">Cancel</button></div>
         </form>
         <aside className="lg:sticky lg:top-5"><div className="text-xs tracking-widest text-slate-400 mb-3">LIVE PREVIEW · UPDATES AS YOU TYPE</div>
-          <div className="rounded-2xl overflow-hidden border border-slate-700 bg-[#0d1520] shadow-2xl">
+          <div className="rounded-2xl overflow-hidden border shadow-2xl" style={{background:visualTheme.background,borderColor:visualTheme.border,boxShadow:'0 0 42px '+visualTheme.glow}}>
             <div className="h-2" style={{background:accent}}/>
-            <div className="p-6"><div className="text-xs font-bold tracking-[.25em]" style={{color:accent}}>SKYNZ CREATOR</div><h2 className="text-3xl font-extrabold mt-3 break-words">{data.title||'Your creator name'}</h2><p className="text-slate-400 mt-1">@{data.handle||'your-handle'}</p><p className="mt-4 text-slate-300 whitespace-pre-wrap break-words">{data.description||'Your creator story appears here.'}</p>
+            <div className="p-6" style={{color:visualTheme.text}}><div className="text-xs font-bold tracking-[.25em]" style={{color:accent}}>SKYNZ CREATOR</div><div className="text-xs mt-2 tracking-widest uppercase" style={{color:visualTheme.secondary}}>{visualTheme.subtitle}</div><h2 className="text-3xl font-extrabold mt-3 break-words">{data.title||'Your creator name'}</h2><p className="text-slate-400 mt-1">@{data.handle||'your-handle'}</p><p className="mt-4 text-slate-300 whitespace-pre-wrap break-words">{data.description||'Your creator story appears here.'}</p>
               {[data.embed_url,data.second_embed_url].filter(Boolean).map((link,i)=>embedURL(link)?<iframe key={i} title={'Creator media '+(i+1)} src={embedURL(link)} className="w-full mt-5 rounded-xl bg-slate-900" style={{height:230}} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/>:<div key={i} className="mt-4 text-amber-300 text-sm">Player {i+1}: enter a supported Spotify or YouTube URL.</div>)}
               <div className="flex flex-wrap gap-2 mt-5">{Object.entries(data.social_links||{}).filter(([p,url])=>PLATFORMS.includes(p)&&safeURL(url)).map(([p,url])=><a key={p} href={safeURL(url)} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-slate-600 px-3 py-2 text-sm capitalize">{p}</a>)}</div>
               {safeURL(data.affiliate_link)&&<a href={safeURL(data.affiliate_link)} target="_blank" rel="noopener noreferrer" className="block mt-5 text-center rounded-xl py-3 font-bold text-slate-950" style={{background:accent}}>Support this creator</a>}
