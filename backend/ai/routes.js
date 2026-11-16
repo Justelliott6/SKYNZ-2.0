@@ -63,6 +63,32 @@ function parseProposal(raw, currentDraft) {
 
 export function createAiRouter(verifyToken) {
   const router = Router();
+  // Authenticated health probe: only reports the configured provider/model and
+  // whether the backend can actually reach the model. No credentials are returned.
+  router.get('/status', verifyToken, async (_req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const provider = process.env.AI_PROVIDER || 'ollama';
+    const model = process.env.OLLAMA_MODEL || 'qwen2.5:3b';
+    if (provider !== 'ollama') {
+      return res.json({ status: 'unavailable', reason: 'Unsupported AI provider', provider });
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3500);
+    try {
+      const endpoint = new URL('/api/tags', process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434');
+      if (!['http:', 'https:'].includes(endpoint.protocol)) throw new Error('Invalid local AI address');
+      const response = await fetch(endpoint, { signal: controller.signal });
+      if (!response.ok) throw new Error('AI model service unavailable');
+      const data = await response.json();
+      const installed = Array.isArray(data.models) && data.models.some((item) => item.name === model || item.model === model);
+      return res.json({ status: installed ? 'ready' : 'model_missing', provider, model, reason: installed ? null : 'Configured model not installed' });
+    } catch {
+      return res.json({ status: 'unavailable', provider, model, reason: 'Ollama is not responding' });
+    } finally {
+      clearTimeout(timer);
+    }
+  });
+
   router.post('/page-draft', verifyToken, async (req, res) => {
     const { instruction, currentDraft = {} } = req.body || {};
     if (typeof instruction !== 'string' || !instruction.trim() || instruction.length > 2000) {
