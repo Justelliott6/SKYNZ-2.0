@@ -209,7 +209,7 @@ const normalizePageInput = (body) => {
     second_embed_url: String(body.second_embed_url || '').slice(0,500),
     affiliate_link: String(body.affiliate_link || '').slice(0,500),
     social_links: links,
-    theme: ['emerald','cyan','amber','rose'].includes(body.theme) ? body.theme : 'emerald'
+    theme: ['emerald','cyan','amber','rose','lambo','luna','elliott'].includes(body.theme) ? body.theme : 'emerald'
   };
 };
 
