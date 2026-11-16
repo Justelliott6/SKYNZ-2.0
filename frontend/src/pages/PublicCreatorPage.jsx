@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
+import { getCreatorTheme } from '../theme/creatorThemes';
 
 const validLink = (v) => { try { const u=new URL(v); return ['https:','http:'].includes(u.protocol)?u.href:''; } catch { return ''; } };
 const mediaLink = (v) => { try {
@@ -12,7 +13,7 @@ const mediaLink = (v) => { try {
   if(u.hostname==='open.spotify.com'&&/^\/(track|playlist|album|episode)\//.test(u.pathname))return 'https://open.spotify.com/embed'+u.pathname;
   return '';
 } catch {return '';} };
-const accents={emerald:'#39d99a',cyan:'#37b9ed',amber:'#f3b657',rose:'#f07b99'};
+
 const PublicCreatorPage = () => {
   const { handle } = useParams();
   const [page, setPage] = useState(null);
@@ -95,14 +96,16 @@ const PublicCreatorPage = () => {
     );
   }
 
+  const visualTheme = getCreatorTheme(page.theme);
   return (
-    <div className="min-h-screen bg-[#080e14] text-white p-4 md:p-8" style={{borderTop:`6px solid ${accents[page.theme]||accents.emerald}`}}>
+    <div className="min-h-screen text-white p-4 md:p-8" style={{background:visualTheme.background,borderTop:`6px solid ${visualTheme.accent}`,color:visualTheme.text}}>
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Header */}
-            <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
+            <div className="border rounded-xl p-6" style={{background:visualTheme.panel,borderColor:visualTheme.border,boxShadow:'0 12px 42px '+visualTheme.glow}}>
+              <p className="uppercase text-xs tracking-[.25em] mb-3" style={{color:visualTheme.accent}}>{visualTheme.subtitle}</p>
               <h1 className="text-white text-3xl font-bold mb-2">{page.title}</h1>
               <p className="text-gray-400 mb-4">@{page.handle}</p>
               <p className="text-gray-300">{page.description}</p>
@@ -130,7 +133,8 @@ const PublicCreatorPage = () => {
                 href={validLink(page.affiliate_link)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-lg text-center transition"
+                className="block text-slate-950 font-bold py-4 rounded-lg text-center transition"
+                style={{background:visualTheme.accent}}
               >
                 Support the Creator
               </a>
@@ -138,7 +142,7 @@ const PublicCreatorPage = () => {
           </div>
 
           {/* Live Chat Sidebar */}
-          <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6 flex flex-col h-fit">
+          <div className="border rounded-xl p-6 flex flex-col h-fit" style={{background:visualTheme.panel,borderColor:visualTheme.border}}>
             <h3 className="text-white text-lg font-bold mb-4">Live Chat</h3>
 
             {/* Messages */}
