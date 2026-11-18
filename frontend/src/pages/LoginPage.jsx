@@ -17,7 +17,7 @@ const LoginPage = () => {
     try {
       await login(email, password);
       toast.success('Login successful!');
-      navigate('/dashboard');
+      navigate('/page-builder');
     } catch (error) {
       toast.error(error.message || 'Login failed');
     } finally {
