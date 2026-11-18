@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 
+const API = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 const useAuthStore = create((set) => ({
-  token: null,
+  token: localStorage.getItem('skynz_token'),
   user: null,
   isLoading: false,
   error: null,
@@ -29,13 +30,13 @@ const useAuthStore = create((set) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
+      const response = await fetch(`${API}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
-      if (!response.ok) throw new Error('Login failed');
+      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error || 'Login failed'); }
 
       const data = await response.json();
       set({ token: data.token, user: data.creator, isLoading: false });
@@ -50,13 +51,13 @@ const useAuthStore = create((set) => ({
   register: async (email, password, name, handle) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+      const response = await fetch(`${API}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name, handle })
       });
 
-      if (!response.ok) throw new Error('Registration failed');
+      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error || 'Registration failed'); }
 
       const data = await response.json();
       set({ token: data.token, user: data.creator, isLoading: false });
