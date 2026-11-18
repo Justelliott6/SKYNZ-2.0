@@ -104,7 +104,7 @@ export default function PageBuilderPage() {
             {generationError && <p role="alert" className="mt-3 text-sm text-rose-300">{generationError} Your existing draft is unchanged.</p>}
           </section>
           <button type="button" onClick={()=>setShowAdvanced(v=>!v)} className="mb-5 rounded-xl border border-slate-600 px-4 py-3 text-sm font-semibold text-slate-200">{showAdvanced?'Hide manual controls':'Customize details, media and links'}</button>
-          {showAdvanced && <nav className="flex flex-wrap gap-2 mb-6" aria-label="Builder sections">{[['identity','Page'],['media','Media'],['social','Social'],['design','Design']].map(([key,name])=><button type="button" key={key} onClick={()=>setTab(key)} className={'px-4 py-2 rounded-xl text-sm font-semibold '+(tab===key?'bg-emerald-400 text-slate-950':'bg-slate-800 text-slate-300')}>{name}</button>)}</nav>
+          {showAdvanced && <nav className="flex flex-wrap gap-2 mb-6" aria-label="Builder sections">{[['identity','Page'],['media','Media'],['social','Social'],['design','Design']].map(([key,name])=><button type="button" key={key} onClick={()=>setTab(key)} className={'px-4 py-2 rounded-xl text-sm font-semibold '+(tab===key?'bg-emerald-400 text-slate-950':'bg-slate-800 text-slate-300')} >{name}</button>)}</nav>}
           {showAdvanced && tab==='identity'&&<section>
             <Field label="Page title"><input required maxLength={120} className={inputStyle} value={data.title} onChange={e=>set('title',e.target.value)} placeholder="Your artist or creator name"/></Field>
             <Field label="Creator handle"><input required pattern="[a-zA-Z0-9_-]{2,50}" maxLength={50} className={inputStyle} value={data.handle} onChange={e=>set('handle',e.target.value)} placeholder="yourname"/></Field>
