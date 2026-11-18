@@ -354,6 +354,7 @@ io.on('connection', (socket) => {
 
   // Join page chat room
   socket.on('join_page', (pageHandle) => {
+    if (typeof pageHandle !== 'string' || !/^[a-z0-9_-]{2,50}$/.test(pageHandle)) return;
     socket.join(`page_${pageHandle}`);
     activeSessions.set(socket.id, { pageHandle, joinedAt: Date.now() });
     
@@ -366,21 +367,27 @@ io.on('connection', (socket) => {
   // Send chat message
   socket.on('send_message', async (data) => {
     try {
-      const { pageHandle, username, message } = data;
+      const { pageHandle, username, message } = data || {};
+      const session = activeSessions.get(socket.id);
+      if (!session || session.pageHandle !== pageHandle ||
+          typeof username !== 'string' || !username.trim() || username.length > 50 ||
+          typeof message !== 'string' || !message.trim() || message.length > 1000) {
+        return socket.emit('error', { message: 'Invalid chat message' });
+      }
       const messageId = uuidv4();
 
       // Save to database
       await pool.query(
         `INSERT INTO chat_messages (id, page_handle, username, message, created_at)
          VALUES ($1, $2, $3, $4, NOW())`,
-        [messageId, pageHandle, username, message]
+        [messageId, pageHandle, username.trim(), message.trim()]
       );
 
       // Broadcast to all users in this page
       io.to(`page_${pageHandle}`).emit('new_message', {
         id: messageId,
-        username,
-        message,
+        username: username.trim(),
+        message: message.trim(),
         timestamp: new Date()
       });
     } catch (error) {
