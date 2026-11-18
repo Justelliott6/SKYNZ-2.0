@@ -35,7 +35,7 @@ const RegisterPage = () => {
     try {
       await register(formData.email, formData.password, formData.name, formData.handle);
       toast.success('Registration successful!');
-      navigate('/dashboard');
+      navigate('/page-builder');
     } catch (error) {
       toast.error(error.message || 'Registration failed');
     } finally {
@@ -44,11 +44,11 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-emerald-900 to-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-block w-16 h-16 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
+          <div className="inline-block w-16 h-16 bg-gradient-to-br from-cyan-400 to-emerald-600 rounded-2xl flex items-center justify-center mb-4">
             <span className="text-white font-bold text-3xl">S</span>
           </div>
           <h1 className="text-white text-3xl font-bold">SKYNZ</h1>
@@ -56,7 +56,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-2xl p-8 backdrop-blur-sm">
+        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-2xl p-8 backdrop-blur-sm">
           <h2 className="text-white text-2xl font-bold mb-6">Create Account</h2>
 
           <div className="mb-4">
@@ -66,7 +66,7 @@ const RegisterPage = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="Your Name"
               required
             />
@@ -79,7 +79,7 @@ const RegisterPage = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="your@email.com"
               required
             />
@@ -92,7 +92,7 @@ const RegisterPage = () => {
               name="handle"
               value={formData.handle}
               onChange={handleChange}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="your_handle"
               required
             />
@@ -105,7 +105,7 @@ const RegisterPage = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="••••••••"
               required
             />
@@ -118,7 +118,7 @@ const RegisterPage = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="••••••••"
               required
             />
@@ -127,7 +127,7 @@ const RegisterPage = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50"
           >
             {isLoading ? 'Creating Account...' : 'Register'}
           </button>
