@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
+import { BufferingRabbit, SkynzEasterEgg, ClassicalAmbience } from '../components/SkynzDelights';
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 const PLATFORMS = ['spotify','youtube','facebook','instagram','tiktok','twitch','soundcloud','discord','website'];
@@ -88,6 +89,7 @@ export default function PageBuilderPage() {
       </header>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <form onSubmit={save} className="rounded-2xl border border-slate-800 bg-[#101923] p-5 md:p-7">
+          <SkynzEasterEgg />
           <section aria-labelledby="page-agent-title" className="mb-6 rounded-2xl border border-cyan-400/30 bg-slate-950/70 p-5">
             <div className="text-xs font-bold tracking-[.2em] text-cyan-200">SKYNZ DESIGN STUDIO</div>
             <h2 id="page-agent-title" className="mt-1 text-lg font-bold text-white">Describe the page you want</h2>
@@ -98,6 +100,7 @@ export default function PageBuilderPage() {
               <span className="text-xs text-slate-500">Designer: {aiProvider||"local AI when connected"}</span>
               <button type="button" disabled={aiLoading||!aiInstruction.trim()} onClick={buildWithAi} className="rounded-xl bg-cyan-300 px-4 py-2.5 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">{aiLoading?"Building draft…":"Design my page"}</button>
             </div>
+            {aiLoading && <BufferingRabbit />}
             {generationError && <p role="alert" className="mt-3 text-sm text-rose-300">{generationError} Your existing draft is unchanged.</p>}
           </section>
           <button type="button" onClick={()=>setShowAdvanced(v=>!v)} className="mb-5 rounded-xl border border-slate-600 px-4 py-3 text-sm font-semibold text-slate-200">{showAdvanced?'Hide manual controls':'Customize details, media and links'}</button>
@@ -126,6 +129,7 @@ export default function PageBuilderPage() {
               {safeURL(data.affiliate_link)&&<a href={safeURL(data.affiliate_link)} target="_blank" rel="noopener noreferrer" className="block mt-5 text-center rounded-xl py-3 font-bold text-slate-950" style={{background:accent}}>Support this creator</a>}
             </div>
           </div>
+          <div className="mt-3"><ClassicalAmbience /></div>
           <p className="text-slate-500 text-xs mt-3">Preview only. Save to update the published page. Streaming and minting are separate future integrations.</p>
         </aside>
       </div>
