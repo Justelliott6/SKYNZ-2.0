@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import useAuthStore from './store/authStore';
 
@@ -11,7 +11,8 @@ import DashboardPage from './pages/DashboardPage';
 import CreatorProfilePage from './pages/CreatorProfilePage';
 import PageBuilderPage from './pages/PageBuilderPage';
 import PublicCreatorPage from './pages/PublicCreatorPage';
-import AnalyticsPage from './pages/AnalyticsPage'
+import AnalyticsPage from './pages/AnalyticsPage';
+import BunnyPreviewPage from './pages/BunnyPreviewPage';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -34,6 +35,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/bunny" element={<BunnyPreviewPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/creator/:handle" element={<PublicCreatorPage />} />
