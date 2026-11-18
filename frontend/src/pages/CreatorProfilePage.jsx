@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
 
+const API = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 const CreatorProfilePage = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -17,7 +18,7 @@ const CreatorProfilePage = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/creator/profile`, {
+      const response = await fetch(`${API}/api/creator/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -47,7 +48,7 @@ const CreatorProfilePage = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/creator/profile`, {
+      const response = await fetch(`${API}/api/creator/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -68,11 +69,11 @@ const CreatorProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-black via-emerald-900 to-black p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-white text-3xl font-bold mb-8">Creator Profile</h1>
 
-        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-xl p-8 space-y-6">
           <div>
             <label className="block text-gray-300 text-sm font-semibold mb-2">Name</label>
             <input
@@ -80,7 +81,7 @@ const CreatorProfilePage = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="Your Name"
             />
           </div>
@@ -91,7 +92,7 @@ const CreatorProfilePage = () => {
               name="bio"
               value={formData.bio}
               onChange={handleChange}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="Tell us about yourself..."
               rows="4"
             />
@@ -104,7 +105,7 @@ const CreatorProfilePage = () => {
               name="avatar_url"
               value={formData.avatar_url}
               onChange={handleChange}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="https://..."
             />
           </div>
@@ -112,7 +113,7 @@ const CreatorProfilePage = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50"
           >
             {isLoading ? 'Saving...' : 'Save Profile'}
           </button>
