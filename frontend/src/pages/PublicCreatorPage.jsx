@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 
+const API = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 const validLink = (v) => { try { const u=new URL(v); return ['https:','http:'].includes(u.protocol)?u.href:''; } catch { return ''; } };
 const mediaLink = (v) => { try {
   const u=new URL(v);
@@ -30,14 +31,14 @@ const PublicCreatorPage = () => {
 
   const fetchPage = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/pages/${handle}`);
+      const response = await fetch(`${API}/api/pages/${handle}`);
       if (!response.ok) throw new Error('Page not found');
 
       const data = await response.json();
       setPage(data);
 
       // Record page view
-      await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000'}/api/analytics/view`, {
+      await fetch(`${API}/api/analytics/view`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pageId: data.id })
@@ -51,7 +52,7 @@ const PublicCreatorPage = () => {
   };
 
   const initializeSocket = () => {
-    const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000');
+    const newSocket = io(API);
     newSocket.on('connect', () => {
       newSocket.emit('join_page', handle);
     });
@@ -102,7 +103,7 @@ const PublicCreatorPage = () => {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Header */}
-            <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
+            <div className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-xl p-6">
               <h1 className="text-white text-3xl font-bold mb-2">{page.title}</h1>
               <p className="text-gray-400 mb-4">@{page.handle}</p>
               <p className="text-gray-300">{page.description}</p>
@@ -130,7 +131,7 @@ const PublicCreatorPage = () => {
                 href={validLink(page.affiliate_link)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-lg text-center transition"
+                className="block bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-4 rounded-lg text-center transition"
               >
                 Support the Creator
               </a>
@@ -138,7 +139,7 @@ const PublicCreatorPage = () => {
           </div>
 
           {/* Live Chat Sidebar */}
-          <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6 flex flex-col h-fit">
+          <div className="bg-gradient-to-br from-purple-900/20 to-black border border-emerald-500/30 rounded-xl p-6 flex flex-col h-fit">
             <h3 className="text-white text-lg font-bold mb-4">Live Chat</h3>
 
             {/* Messages */}
@@ -162,7 +163,7 @@ const PublicCreatorPage = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Your name"
-                className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-cyan-400 transition"
+                className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-cyan-400 transition"
               />
               <div className="flex gap-2">
                 <input
@@ -170,11 +171,11 @@ const PublicCreatorPage = () => {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Say something..."
-                  className="flex-1 bg-black/50 border border-purple-500/30 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-cyan-400 transition"
+                  className="flex-1 bg-black/50 border border-emerald-500/30 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-cyan-400 transition"
                 />
                 <button
                   type="submit"
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition font-semibold text-sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition font-semibold text-sm"
                 >
                   Send
                 </button>
