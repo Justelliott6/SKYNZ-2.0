@@ -26,6 +26,7 @@ ChartJS.register(
   Legend
 );
 
+const API = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 const AnalyticsPage = () => {
   const { pageId } = useParams();
   const [analytics, setAnalytics] = useState([]);
@@ -38,7 +39,7 @@ const AnalyticsPage = () => {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/${pageId}`, {
+      const response = await fetch(`${API}/api/analytics/${pageId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -87,7 +88,7 @@ const AnalyticsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-black via-emerald-900 to-black p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-white text-3xl font-bold mb-8">Analytics</h1>
 
@@ -97,26 +98,26 @@ const AnalyticsPage = () => {
           <div className="space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
+              <div className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-xl p-6">
                 <p className="text-gray-400 text-sm">Total Views</p>
                 <p className="text-white text-3xl font-bold mt-2">
                   {analytics.reduce((sum, a) => sum + (a.visitor_count || 0), 0)}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
+              <div className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-xl p-6">
                 <p className="text-gray-400 text-sm">Watch Time</p>
                 <p className="text-white text-3xl font-bold mt-2">
                   {Math.round(analytics.reduce((sum, a) => sum + (a.watch_time || 0), 0) / 60)}h
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
+              <div className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-xl p-6">
                 <p className="text-gray-400 text-sm">Last 7 Days</p>
                 <p className="text-white text-3xl font-bold mt-2">{analytics.length}</p>
               </div>
             </div>
 
             {/* Chart */}
-            <div className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-xl p-6">
+            <div className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-xl p-6">
               <h2 className="text-white text-xl font-bold mb-4">Views Over Time</h2>
               <Line data={chartData} options={chartOptions} />
             </div>
