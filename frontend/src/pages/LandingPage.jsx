@@ -1,12 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
 import { SkynzEasterEgg, ClassicalAmbience } from '../components/SkynzDelights';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const token = useAuthStore(state => state.token);
 
   const handleEnter = () => {
-    navigate('/register');
+    navigate(token ? '/page-builder' : '/register');
   };
 
   return (
@@ -30,12 +32,12 @@ const LandingPage = () => {
                 viewBox="0 0 120 120"
                 className="drop-shadow-lg"
               >
-                {/* Cyan to Purple gradient arrow */}
+                {/* SKYNZ green/cyan gradient arrow */}
                 <defs>
                   <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="50%" stopColor="#9333ea" />
-                    <stop offset="100%" stopColor="#ec4899" />
+                    <stop offset="50%" stopColor="#34d399" />
+                    <stop offset="100%" stopColor="#0d9488" />
                   </linearGradient>
                 </defs>
 
@@ -62,7 +64,7 @@ const LandingPage = () => {
             {/* Tagline with gradient */}
             <p className="text-sm md:text-base tracking-widest">
               <span className="text-cyan-400">YOUR PAGE.</span>
-              <span className="text-pink-500 mx-2">YOUR VIBE.</span>
+              <span className="text-emerald-400 mx-2">YOUR VIBE.</span>
               <span className="text-cyan-400">YOUR STAGE.</span>
             </p>
           </div>
