@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /** Decorative, reduced-motion-aware loading rabbit. No external assets required. */
 export function BufferingRabbit({ label = 'Building your SKYNZ page…' }) {
@@ -31,11 +31,20 @@ export function SkynzEasterEgg() {
 
 /** Music only plays when a creator explicitly opts in. */
 export function ClassicalAmbience({ src = '/audio/skynz-classical.mp3' }) {
-  const [enabled,setEnabled]=useState(false);
-  const [failed,setFailed]=useState(false);
+  const audioRef = useRef(null);
+  const [enabled,setEnabled] = useState(false);
+  const [failed,setFailed] = useState(false);
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (!enabled) { audio.pause(); return; }
+    audio.volume = 0.18;
+    audio.play().catch(() => { setEnabled(false); setFailed(true); });
+    return () => audio.pause();
+  }, [enabled, src]);
   return <div className="text-xs text-slate-400">
-    <audio src={src} loop preload="none" onError={()=>{setFailed(true);setEnabled(false)}} ref={node=>{if(!node)return;if(enabled){node.volume=0.18;node.play().catch(()=>{setEnabled(false);setFailed(true)})}else node.pause()}} />
+    <audio ref={audioRef} src={src} loop preload="none" onError={()=>{setFailed(true);setEnabled(false)}} />
     <button type="button" onClick={()=>{setFailed(false);setEnabled(v=>!v)}} aria-pressed={enabled} className="rounded-full border border-slate-700 px-3 py-2">{enabled?'♫ Music on · turn off':'♫ Classical ambience · play'}</button>
-    {failed && <span className="ml-2">Music file not installed yet.</span>}
+    {failed && <span role="status" className="ml-2">Music is not available yet.</span>}
   </div>;
 }
