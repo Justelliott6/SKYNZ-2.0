@@ -26,11 +26,11 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-emerald-900 to-black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-block w-16 h-16 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
+          <div className="inline-block w-16 h-16 bg-gradient-to-br from-cyan-400 to-emerald-600 rounded-2xl flex items-center justify-center mb-4">
             <span className="text-white font-bold text-3xl">S</span>
           </div>
           <h1 className="text-white text-3xl font-bold">SKYNZ</h1>
@@ -38,7 +38,7 @@ const LoginPage = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-purple-900/20 to-black border border-purple-500/30 rounded-2xl p-8 backdrop-blur-sm">
+        <form onSubmit={handleSubmit} className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-2xl p-8 backdrop-blur-sm">
           <h2 className="text-white text-2xl font-bold mb-6">Login</h2>
 
           <div className="mb-4">
@@ -47,7 +47,7 @@ const LoginPage = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="your@email.com"
               required
             />
@@ -59,7 +59,7 @@ const LoginPage = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-black/50 border border-purple-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
+              className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
               placeholder="••••••••"
               required
             />
@@ -68,7 +68,7 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50"
           >
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
