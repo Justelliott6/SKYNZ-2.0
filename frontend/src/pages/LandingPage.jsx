@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { SkynzEasterEgg, ClassicalAmbience } from '../components/SkynzDelights';
 
@@ -88,6 +88,7 @@ const LandingPage = () => {
           </button>
         </div>
 
+        <Link to="/bunny" className="inline-block rounded-full border border-emerald-400/60 px-5 py-3 text-emerald-200 hover:bg-emerald-400/10">🐇 Meet the buffering bunny</Link>
         <SkynzEasterEgg />
         <ClassicalAmbience />
         {/* Footer text */}
