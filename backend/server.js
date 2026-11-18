@@ -355,8 +355,11 @@ io.on('connection', (socket) => {
   // Join page chat room
   socket.on('join_page', (pageHandle) => {
     if (typeof pageHandle !== 'string' || !/^[a-z0-9_-]{2,50}$/.test(pageHandle)) return;
+    const previous = activeSessions.get(socket.id);
+    if (previous?.pageHandle === pageHandle) return;
+    if (previous) socket.leave(`page_${previous.pageHandle}`);
     socket.join(`page_${pageHandle}`);
-    activeSessions.set(socket.id, { pageHandle, joinedAt: Date.now() });
+    activeSessions.set(socket.id, { pageHandle, joinedAt: Date.now(), lastMessageAt: 0 });
     
     io.to(`page_${pageHandle}`).emit('user_joined', {
       message: 'User joined the chat',
@@ -374,6 +377,12 @@ io.on('connection', (socket) => {
           typeof message !== 'string' || !message.trim() || message.length > 1000) {
         return socket.emit('error', { message: 'Invalid chat message' });
       }
+      // Bound repeated submissions without collecting visitor identity.
+      const now = Date.now();
+      if (now - session.lastMessageAt < 1200) {
+        return socket.emit('error', { message: 'Please wait before sending another message' });
+      }
+      session.lastMessageAt = now;
       const messageId = uuidv4();
 
       // Save to database
