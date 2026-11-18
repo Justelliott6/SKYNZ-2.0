@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiPlus, FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiEye, FiBarChart2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
 
@@ -67,12 +67,12 @@ const DashboardPage = () => {
             <p className="text-white text-3xl font-bold mt-2">{pages.length}</p>
           </div>
           <div className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-xl p-6">
-            <p className="text-gray-400 text-sm">Total Views</p>
-            <p className="text-white text-3xl font-bold mt-2">0</p>
+            <p className="text-gray-400 text-sm">Page insights</p>
+            <p className="text-slate-300 text-sm mt-2">Open a page’s analytics to see recorded activity.</p>
           </div>
           <div className="bg-gradient-to-br from-emerald-900/20 to-black border border-emerald-500/30 rounded-xl p-6">
-            <p className="text-gray-400 text-sm">Earnings</p>
-            <p className="text-white text-3xl font-bold mt-2">$0</p>
+            <p className="text-gray-400 text-sm">Payouts</p>
+            <p className="text-slate-300 text-sm mt-2">Not connected yet</p>
           </div>
         </div>
 
@@ -129,6 +129,7 @@ const DashboardPage = () => {
                         >
                           <FiEye size={18} />
                         </a>
+                        <Link to={`/analytics/${page.id}`} className="text-cyan-300 hover:text-white transition" title="Page analytics" aria-label={`Analytics for ${page.title}`}><FiBarChart2 size={18}/></Link>
                         <Link
                           to={`/page-builder/${page.id}`}
                           className="text-emerald-400 hover:text-emerald-300 transition"
