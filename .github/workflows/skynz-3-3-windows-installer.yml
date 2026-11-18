@@ -1,0 +1,39 @@
+name: SKYNZ 3.3 Windows ASUS test installer
+on:
+  push:
+    branches: [skynz-3.3-creator-experience]
+    paths:
+      - 'desktop/**'
+      - 'frontend/**'
+      - '.github/workflows/skynz-3-3-windows-installer.yml'
+  workflow_dispatch:
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build creator frontend
+        working-directory: frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+        env:
+          CI: 'false'
+      - name: Build unsigned ASUS installer
+        working-directory: desktop
+        run: |
+          npm install --no-audit --no-fund
+          npm run dist:win
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SKYNZ-3.3-ASUS-Windows-test-installer
+          path: desktop/dist/*.exe
+          if-no-files-found: error
+          retention-days: 14
