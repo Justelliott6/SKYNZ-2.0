@@ -5,7 +5,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const handleEnter = () => {
-    navigate('/login');
+    navigate('/register');
   };
 
   return (
@@ -13,7 +13,7 @@ const LandingPage = () => {
       {/* Glow effect background */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl absolute"></div>
-        <div className="w-96 h-96 bg-purple-500/20 rounded-full blur-3xl absolute -right-48 -top-48"></div>
+        <div className="w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl absolute -right-48 -top-48"></div>
       </div>
 
       {/* Content */}
@@ -87,7 +87,7 @@ const LandingPage = () => {
 
         {/* Footer text */}
         <div className="pt-12 text-gray-500 text-sm italic">
-          <p>Still writing code after 8 months 🚀</p>
+          <p>Create your own space. Design it your way.</p>
         </div>
       </div>
     </div>
