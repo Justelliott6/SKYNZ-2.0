@@ -90,6 +90,10 @@ const RegisterPage = () => {
             <input
               type="text"
               name="handle"
+              minLength={2}
+              maxLength={50}
+              pattern="[a-zA-Z0-9_-]{2,50}"
+              title="2–50 letters, numbers, underscores or hyphens"
               value={formData.handle}
               onChange={handleChange}
               className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
@@ -103,6 +107,7 @@ const RegisterPage = () => {
             <input
               type="password"
               name="password"
+              minLength={8}
               value={formData.password}
               onChange={handleChange}
               className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
@@ -116,6 +121,7 @@ const RegisterPage = () => {
             <input
               type="password"
               name="confirmPassword"
+              minLength={8}
               value={formData.confirmPassword}
               onChange={handleChange}
               className="w-full bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition"
