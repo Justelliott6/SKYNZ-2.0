@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SkynzEasterEgg, ClassicalAmbience } from '../components/SkynzDelights';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -85,6 +86,8 @@ const LandingPage = () => {
           </button>
         </div>
 
+        <SkynzEasterEgg />
+        <ClassicalAmbience />
         {/* Footer text */}
         <div className="pt-12 text-gray-500 text-sm italic">
           <p>Create your own space. Design it your way.</p>
