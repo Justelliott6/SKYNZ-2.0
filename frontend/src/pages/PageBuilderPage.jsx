@@ -61,7 +61,7 @@ export default function PageBuilderPage() {
   },[pageId,token]);
   const save=async(e)=>{
     e.preventDefault();
-    if (!data.title.trim() || !/^[a-zA-Z0-9_-]{1,50}$/.test(data.handle.trim().replace(/^@/,''))) {
+    if (!data.title.trim() || !/^[a-zA-Z0-9_-]{2,50}$/.test(data.handle.trim().replace(/^@/,''))) {
       setShowAdvanced(true); setTab('identity');
       toast.error('Add a creator name and valid handle before saving.');
       return;
@@ -107,7 +107,7 @@ export default function PageBuilderPage() {
           {showAdvanced && <nav className="flex flex-wrap gap-2 mb-6" aria-label="Builder sections">{[['identity','Page'],['media','Media'],['social','Social'],['design','Design']].map(([key,name])=><button type="button" key={key} onClick={()=>setTab(key)} className={'px-4 py-2 rounded-xl text-sm font-semibold '+(tab===key?'bg-emerald-400 text-slate-950':'bg-slate-800 text-slate-300')}>{name}</button>)}</nav>
           {showAdvanced && tab==='identity'&&<section>
             <Field label="Page title"><input required maxLength={120} className={inputStyle} value={data.title} onChange={e=>set('title',e.target.value)} placeholder="Your artist or creator name"/></Field>
-            <Field label="Creator handle"><input required pattern="[a-zA-Z0-9_-]+" maxLength={50} className={inputStyle} value={data.handle} onChange={e=>set('handle',e.target.value)} placeholder="yourname"/></Field>
+            <Field label="Creator handle"><input required pattern="[a-zA-Z0-9_-]{2,50}" maxLength={50} className={inputStyle} value={data.handle} onChange={e=>set('handle',e.target.value)} placeholder="yourname"/></Field>
             <Field label="About your page"><textarea rows={5} maxLength={1500} className={inputStyle} value={data.description||''} onChange={e=>set('description',e.target.value)} placeholder="Tell visitors what you create"/></Field>
             <Field label="Support / affiliate link"><input type="url" className={inputStyle} value={data.affiliate_link||''} onChange={e=>set('affiliate_link',e.target.value)} placeholder="https://..."/></Field>
           </section>}
